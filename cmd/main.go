@@ -20,6 +20,7 @@ func main() {
 	CreateDir(*dir)
 
 	http.HandleFunc("/orders", handler.OrderHandler)
+	http.HandleFunc("/orders/{id}", handler.OrderHandler)
 	http.HandleFunc("/menu", handler.MenuHandler)
 	http.HandleFunc("/inventory", handler.InventoryHandler)
 

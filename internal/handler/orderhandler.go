@@ -13,9 +13,9 @@ func OrderHandler(w http.ResponseWriter, r *http.Request) {
 	case 1:
 		switch r.Method {
 		case http.MethodPost:
-
+			PostOrder(w, r)
 		case http.MethodGet:
-
+			GetOrders(w, r)
 		default:
 			fmt.Println("error")
 			os.Exit(1)
