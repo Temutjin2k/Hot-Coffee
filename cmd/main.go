@@ -54,7 +54,7 @@ func CreateDir(dir string) {
 func Help(s []string) {
 	for _, v := range s {
 		if v == "--help" || v == "-help" || v == "-h" {
-			fmt.Print(`Coffee Shop Management System
+			fmt.Println(`Coffee Shop Management System
 
 Usage:
 	hot-coffee [--port <N>] [--dir <S>] 
@@ -64,6 +64,7 @@ Options:
 	--help       Show this screen.
 	--port N     Port number.
 	--dir S      Path to the data directory.`)
+			os.Exit(0)
 		}
 	}
 }

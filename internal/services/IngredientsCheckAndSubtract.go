@@ -2,17 +2,23 @@ package services
 
 import (
 	"encoding/json"
+	"fmt"
+	"hot-coffee/internal/ErrorHandler"
 	"hot-coffee/models"
 	"io/ioutil"
+	"net/http"
+	"os"
 )
 
-func MenuCheck(order models.Order) bool { // Надо проверить если в меню эта вещь
+func MenuCheck(w http.ResponseWriter, order models.Order) bool { // Надо проверить если в меню эта вещь
 	items := make([]string, 0)
 	for _, item := range order.Items {
 		items = append(items, item.ProductID)
 	}
+	fmt.Println(items) // espresso
+
 	var MenuItems []models.MenuItem
-	menucontent, err := ioutil.ReadFile("data/menu-items.json")
+	menucontent, err := ioutil.ReadFile("data/menu_items.json")
 	if err != nil {
 		// TO DO
 	}
@@ -26,23 +32,65 @@ func MenuCheck(order models.Order) bool { // Надо проверить есл�
 			}
 		}
 	}
-
 	return match == len(items)
 }
 
-func IngredientsCheck(order models.Order) bool { // Проверка на ингредиенты
-	if !MenuCheck(order) {
-		// вывести ошибку что нету этой вещи в меню
+func IngredientsCheck(w http.ResponseWriter, order models.Order) bool { // Проверка на ингредиенты
+	if !MenuCheck(w, order) {
+		ErrorHandler.Error(w, "Your order is not in menu, please check again our menu", http.StatusBadRequest)
+		return false
 	}
-	ingredients, err := ioutil.ReadFile("data/inventory.json")
+	menucontent, err := ioutil.ReadFile("data/menu_items.json")
 	if err != nil {
 		// TO DO
 	}
+
 	var MenuItems []models.MenuItem
-	json.Unmarshal(ingredients, &MenuItems)
+	json.Unmarshal(menucontent, &MenuItems)
+	ing := make(map[string]float64)
 
-	return true
+	for _, orderitem := range order.Items {
+		for _, menuitem := range MenuItems {
+			if orderitem.ProductID == menuitem.ID {
+				for _, ingrs := range menuitem.Ingredients {
+					ing[ingrs.IngredientID] = float64(ingrs.Quantity) * float64(orderitem.Quantity)
+				}
+			}
+		}
+	}
+
+	inventorycontent, err := ioutil.ReadFile("data/inventory.json")
+	if err != nil {
+		// TO DO
+	}
+	fmt.Println(ing)
+	flag := true
+	var InventoryItems []models.InventoryItem
+	json.Unmarshal(inventorycontent, &InventoryItems)
+
+	for i, inventoryitem := range InventoryItems {
+		value, isExist := ing[inventoryitem.IngredientID]
+		if isExist {
+			if value < inventoryitem.Quantity {
+				InventoryItems[i].Quantity -= value
+			} else {
+				flag = false
+			}
+		} else if i == len(InventoryItems)-1 {
+			flag = false
+		}
+	}
+	if flag {
+		// json.MarshalIndent() принимает структуру и конвертирует все в инфу в стиле json
+		jsonData, err := json.MarshalIndent(InventoryItems, "", "    ")
+		if err != nil {
+			// will write error handler
+		}
+
+		err = os.WriteFile("data/inventory.json", jsonData, 0644) // os.WriteFile(filename, content, perm) в файл записывает данные
+		if err != nil {
+			// will write error handler
+		}
+	}
+	return flag
 }
-
-// func SubtractIngredient() { // Отнять ингредиенты
-// }
