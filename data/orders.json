@@ -45,9 +45,34 @@
     },
     {
         "order_id": "1",
-        "customer_name": "",
-        "items": null,
+        "customer_name": "John Doe",
+        "items": [
+            {
+                "product_id": "espresso",
+                "quantity": 2
+            },
+            {
+                "product_id": "croissant",
+                "quantity": 1
+            }
+        ],
         "status": "active",
-        "created_at": "2024-10-17T22:03:13+05:00"
+        "created_at": "2024-10-18T20:56:07+05:00"
+    },
+    {
+        "order_id": "1",
+        "customer_name": "John Doe",
+        "items": [
+            {
+                "product_id": "espresso",
+                "quantity": 2
+            },
+            {
+                "product_id": "croissant",
+                "quantity": 1
+            }
+        ],
+        "status": "active",
+        "created_at": "2024-10-18T20:56:08+05:00"
     }
 ]

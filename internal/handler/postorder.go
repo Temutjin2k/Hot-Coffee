@@ -2,7 +2,7 @@ package handler
 
 import (
 	"encoding/json"
-	"hot-coffee/internal/businesslogic"
+	"hot-coffee/internal/services"
 	"hot-coffee/models"
 	"io/ioutil"
 	"net/http"
@@ -16,7 +16,11 @@ func PostOrder(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		// will write error handler
 	}
-	businesslogic.IngredientsCheck(order)
+	if services.MenuCheck(order) {
+	} else {
+		// вывести ошибку что нету этой вещи в меню
+		return
+	}
 
 	var orders []models.Order
 	content, err := ioutil.ReadFile("data/orders.json") // ioutil.ReadFile() читает файл и возвращает содержимое в массие из байтов
