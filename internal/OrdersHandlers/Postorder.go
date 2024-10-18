@@ -1,4 +1,4 @@
-package handler
+package OrdersHandlers
 
 import (
 	"encoding/json"
@@ -34,7 +34,7 @@ func PostOrder(w http.ResponseWriter, r *http.Request) {
 	Location, err := time.LoadLocation("Asia/Aqtau")
 	timenow := time.Now().In(Location).Format(time.RFC3339)
 	order.ID = "1"
-	order.Status = "active"
+	order.Status = "open"
 	order.CreatedAt = timenow
 
 	orders = append(orders, order)
