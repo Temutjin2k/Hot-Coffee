@@ -3,6 +3,7 @@ package services
 import (
 	"encoding/json"
 	"fmt"
+	"hot-coffee/config"
 	"hot-coffee/internal/ErrorHandler"
 	"hot-coffee/models"
 	"io/ioutil"
@@ -18,7 +19,7 @@ func MenuCheck(w http.ResponseWriter, order models.Order) bool { // Надо п�
 	fmt.Println(items) // espresso
 
 	var MenuItems []models.MenuItem
-	menucontent, err := ioutil.ReadFile("data/menu_items.json")
+	menucontent, err := ioutil.ReadFile(config.BaseDir + "/menu_items.json")
 	if err != nil {
 		// TO DO
 	}
@@ -35,12 +36,30 @@ func MenuCheck(w http.ResponseWriter, order models.Order) bool { // Надо п�
 	return match == len(items)
 }
 
+func MenuCheck2(NewItem models.MenuItem) bool { // Надо проверить если в меню эта вещь
+
+	var MenuItems []models.MenuItem
+	menucontent, err := ioutil.ReadFile(config.BaseDir + "/menu_items.json")
+	if err != nil {
+		// TO DO
+	}
+
+	json.Unmarshal(menucontent, &MenuItems)
+
+	for _, item := range MenuItems {
+		if NewItem.ID == item.ID {
+			return true
+		}
+	}
+	return false
+}
+
 func IngredientsCheck(w http.ResponseWriter, order models.Order) bool { // Проверка на ингредиенты
 	if !MenuCheck(w, order) {
 		ErrorHandler.Error(w, "Your order is not in menu, please check again our menu", http.StatusBadRequest)
 		return false
 	}
-	menucontent, err := ioutil.ReadFile("data/menu_items.json")
+	menucontent, err := ioutil.ReadFile(config.BaseDir + "/menu_items.json")
 	if err != nil {
 		// TO DO
 	}
@@ -59,7 +78,7 @@ func IngredientsCheck(w http.ResponseWriter, order models.Order) bool { // Пр�
 		}
 	}
 
-	inventorycontent, err := ioutil.ReadFile("data/inventory.json")
+	inventorycontent, err := ioutil.ReadFile(config.BaseDir + "/inventory.json")
 	if err != nil {
 		// TO DO
 	}
@@ -86,7 +105,7 @@ func SubtractIngridients(w http.ResponseWriter, order models.Order) {
 		ErrorHandler.Error(w, "Not enough ingedients or needed ingerdients do not exist", http.StatusBadRequest)
 		return
 	}
-	menucontent, err := ioutil.ReadFile("data/menu_items.json")
+	menucontent, err := ioutil.ReadFile(config.BaseDir + "/menu_items.json")
 	if err != nil {
 		// TO DO
 	}
@@ -105,7 +124,7 @@ func SubtractIngridients(w http.ResponseWriter, order models.Order) {
 		}
 	}
 
-	inventorycontent, err := ioutil.ReadFile("data/inventory.json")
+	inventorycontent, err := ioutil.ReadFile(config.BaseDir + "/inventory.json")
 	if err != nil {
 		// TO DO
 	}
@@ -129,7 +148,7 @@ func SubtractIngridients(w http.ResponseWriter, order models.Order) {
 		// will write error handler
 	}
 
-	err = os.WriteFile("data/inventory.json", jsonData, 0644) // os.WriteFile(filename, content, perm) в файл записывает данные
+	err = os.WriteFile(config.BaseDir+"/inventory.json", jsonData, 0644) // os.WriteFile(filename, content, perm) в файл записывает данные
 	if err != nil {
 		// will write error handler
 	}

@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"fmt"
 	"hot-coffee/internal/ErrorHandler"
 	"hot-coffee/internal/OrdersHandlers"
 	"net/http"
@@ -10,8 +9,6 @@ import (
 
 func OrderHandler(w http.ResponseWriter, r *http.Request) {
 	Parts := strings.SplitN(r.URL.Path[1:], "/", 3)
-	fmt.Println(Parts)
-	fmt.Println(len(Parts))
 	switch len(Parts) {
 	case 1:
 		switch r.Method {
@@ -20,8 +17,7 @@ func OrderHandler(w http.ResponseWriter, r *http.Request) {
 		case http.MethodGet:
 			OrdersHandlers.GetOrders(w)
 		default:
-			ErrorHandler.Error(w, "Method is not allowed", http.StatusForbidden)
-
+			ErrorHandler.Error(w, "Method is not allowed", http.StatusMethodNotAllowed)
 		}
 	case 2:
 		switch r.Method {
@@ -32,7 +28,7 @@ func OrderHandler(w http.ResponseWriter, r *http.Request) {
 		case http.MethodDelete:
 			OrdersHandlers.Deleteorder(w, r.URL.Path[8:])
 		default:
-			ErrorHandler.Error(w, "Method is not allowed", http.StatusForbidden)
+			ErrorHandler.Error(w, "Method is not allowed", http.StatusMethodNotAllowed)
 		}
 	case 3:
 		if r.Method == http.MethodPost {
@@ -42,7 +38,7 @@ func OrderHandler(w http.ResponseWriter, r *http.Request) {
 				ErrorHandler.Error(w, "Adress is not allowed", http.StatusForbidden)
 			}
 		} else {
-			ErrorHandler.Error(w, "Method is not allowed", http.StatusForbidden)
+			ErrorHandler.Error(w, "Method is not allowed", http.StatusMethodNotAllowed)
 		}
 	}
 }

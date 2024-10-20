@@ -3,6 +3,7 @@ package OrdersHandlers
 import (
 	"encoding/json"
 	"fmt"
+	"hot-coffee/config"
 	"hot-coffee/internal/ErrorHandler"
 	"hot-coffee/internal/services"
 	"hot-coffee/models"
@@ -30,7 +31,7 @@ func Putorder(w http.ResponseWriter, r *http.Request, OrderID string) {
 		return
 	}
 
-	OrderContents, err := ioutil.ReadFile("data/orders.json")
+	OrderContents, err := ioutil.ReadFile(config.BaseDir + "/orders.json")
 	if err != nil {
 		ErrorHandler.Error(w, "Could not read orders from server", http.StatusInternalServerError)
 		return
@@ -54,7 +55,7 @@ func Putorder(w http.ResponseWriter, r *http.Request, OrderID string) {
 		ErrorHandler.Error(w, "Could not upload order", http.StatusInternalServerError)
 		return
 	}
-	err = ioutil.WriteFile("data/orders.json", jsondata, os.ModePerm)
+	err = ioutil.WriteFile(config.BaseDir+"/orders.json", jsondata, os.ModePerm)
 	if err != nil {
 		ErrorHandler.Error(w, "Could not rewrite orders", http.StatusInternalServerError)
 		return

@@ -2,6 +2,7 @@ package OrdersHandlers
 
 import (
 	"encoding/json"
+	"hot-coffee/config"
 	"hot-coffee/internal/ErrorHandler"
 	"hot-coffee/models"
 	"io/ioutil"
@@ -9,7 +10,7 @@ import (
 )
 
 func GetOrders(w http.ResponseWriter) {
-	content, err := ioutil.ReadFile("data/orders.json")
+	content, err := ioutil.ReadFile(config.BaseDir + "/orders.json")
 	if err != nil {
 		ErrorHandler.Error(w, "Could not read orders from server", http.StatusInternalServerError)
 		return
@@ -20,11 +21,12 @@ func GetOrders(w http.ResponseWriter) {
 }
 
 func GetOrder(w http.ResponseWriter, OrderID string) {
-	OrderContents, err := ioutil.ReadFile("data/orders.json")
+	OrderContents, err := ioutil.ReadFile(config.BaseDir + "/orders.json")
 	if err != nil {
 		ErrorHandler.Error(w, "Could not read orders from server", http.StatusInternalServerError)
 		return
 	}
+	flag := true
 	var Orders []models.Order
 	var NeededOrder models.Order
 	json.Unmarshal(OrderContents, &Orders)
@@ -35,6 +37,7 @@ func GetOrder(w http.ResponseWriter, OrderID string) {
 			NeededOrder.ID = OrderID
 			NeededOrder.Items = order.Items
 			NeededOrder.Status = order.Status
+			flag = false
 		}
 	}
 	jsondata, err := json.MarshalIndent(NeededOrder, "", "    ")
@@ -42,7 +45,11 @@ func GetOrder(w http.ResponseWriter, OrderID string) {
 		ErrorHandler.Error(w, "Could not upload order", http.StatusInternalServerError)
 		return
 	}
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	w.Write(jsondata)
+	if !flag {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		w.Write(jsondata)
+	} else {
+		ErrorHandler.Error(w, "Your requested order is not found", 404)
+	}
 }

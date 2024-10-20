@@ -2,6 +2,7 @@ package OrdersHandlers
 
 import (
 	"encoding/json"
+	"hot-coffee/config"
 	"hot-coffee/internal/ErrorHandler"
 	"hot-coffee/internal/services"
 	"hot-coffee/models"
@@ -24,7 +25,7 @@ func PostOrder(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var orders []models.Order
-	content, err := ioutil.ReadFile("data/orders.json") // ioutil.ReadFile() читает файл и возвращает содержимое в массие из байтов
+	content, err := ioutil.ReadFile(config.BaseDir + "/orders.json") // ioutil.ReadFile() читает файл и возвращает содержимое в массие из байтов
 	if err != nil {
 		ErrorHandler.Error(w, "Could not read orders from server", http.StatusInternalServerError)
 		return
@@ -46,7 +47,7 @@ func PostOrder(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = os.WriteFile("data/orders.json", jsonData, 0644) // os.WriteFile(filename, content, perm) в файл записывает данные
+	err = os.WriteFile(config.BaseDir+"/orders.json", jsonData, 0644) // os.WriteFile(filename, content, perm) в файл записывает данные
 	if err != nil {
 		ErrorHandler.Error(w, "Could not write orders to json database", http.StatusInternalServerError)
 		return

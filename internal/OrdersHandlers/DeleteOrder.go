@@ -2,6 +2,7 @@ package OrdersHandlers
 
 import (
 	"encoding/json"
+	"hot-coffee/config"
 	"hot-coffee/internal/ErrorHandler"
 	"hot-coffee/models"
 	"io/ioutil"
@@ -10,7 +11,7 @@ import (
 )
 
 func Deleteorder(w http.ResponseWriter, ObjectID string) {
-	OrderContents, err := ioutil.ReadFile("data/orders.json")
+	OrderContents, err := ioutil.ReadFile(config.BaseDir + "/orders.json")
 	if err != nil {
 		ErrorHandler.Error(w, "Could not read orders from server", http.StatusInternalServerError)
 		return
@@ -35,7 +36,7 @@ func Deleteorder(w http.ResponseWriter, ObjectID string) {
 		ErrorHandler.Error(w, "Could transfer orders to json file", http.StatusInternalServerError)
 		return
 	}
-	err = ioutil.WriteFile("data/orders.json", jsonData, os.ModePerm)
+	err = ioutil.WriteFile(config.BaseDir+"/orders.json", jsonData, os.ModePerm)
 	if err != nil {
 		ErrorHandler.Error(w, "Could not rewwrite orders in server", http.StatusInternalServerError)
 		return
