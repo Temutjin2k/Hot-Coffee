@@ -9,6 +9,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"strconv"
 	"time"
 )
 
@@ -17,6 +18,11 @@ func PostOrder(w http.ResponseWriter, r *http.Request) {
 	err := json.NewDecoder(r.Body).Decode(&order)
 	if err != nil {
 		ErrorHandler.Error(w, "Could not decode request json data", http.StatusBadRequest)
+		return
+	}
+
+	if !services.MenuCheck(w, order) {
+		ErrorHandler.Error(w, "Your order does not exist in menu", http.StatusBadRequest)
 		return
 	}
 	if !services.IngredientsCheck(w, order) {
@@ -34,9 +40,9 @@ func PostOrder(w http.ResponseWriter, r *http.Request) {
 
 	Location, err := time.LoadLocation("Asia/Aqtau")
 	timenow := time.Now().In(Location).Format(time.RFC3339)
-	order.ID = "1"
-	order.Status = "open"
 	order.CreatedAt = timenow
+	order.ID = strconv.Itoa(GetID(w))
+	order.Status = "open"
 
 	orders = append(orders, order)
 
@@ -52,4 +58,21 @@ func PostOrder(w http.ResponseWriter, r *http.Request) {
 		ErrorHandler.Error(w, "Could not write orders to json database", http.StatusInternalServerError)
 		return
 	}
+}
+
+func GetID(w http.ResponseWriter) int {
+	ConfigContent, err := os.ReadFile(config.BaseDir + "/config.json")
+	if err != nil {
+		ErrorHandler.Error(w, "Internal server error", http.StatusInternalServerError)
+	}
+	var ID models.OrderID
+	err = json.Unmarshal(ConfigContent, &ID)
+	if err != nil {
+		ErrorHandler.Error(w, "Internal server error", http.StatusInternalServerError)
+	}
+	i := ID.ID
+	ID.ID++
+	NewContent, err := json.MarshalIndent(ID, "", "    ")
+	os.WriteFile(config.BaseDir+"/config.json", NewContent, os.ModePerm)
+	return i
 }

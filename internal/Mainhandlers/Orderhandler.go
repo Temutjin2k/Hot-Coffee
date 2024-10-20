@@ -1,4 +1,4 @@
-package handler
+package Mainhandlers
 
 import (
 	"hot-coffee/internal/ErrorHandler"
@@ -22,11 +22,11 @@ func OrderHandler(w http.ResponseWriter, r *http.Request) {
 	case 2:
 		switch r.Method {
 		case http.MethodPut:
-			OrdersHandlers.Putorder(w, r, r.URL.Path[8:])
+			OrdersHandlers.Putorder(w, r, Parts[1])
 		case http.MethodGet:
-			OrdersHandlers.GetOrder(w, r.URL.Path[8:])
+			OrdersHandlers.GetOrder(w, Parts[1])
 		case http.MethodDelete:
-			OrdersHandlers.Deleteorder(w, r.URL.Path[8:])
+			OrdersHandlers.Deleteorder(w, Parts[1])
 		default:
 			ErrorHandler.Error(w, "Method is not allowed", http.StatusMethodNotAllowed)
 		}

@@ -1,17 +1,13 @@
 [
     {
         "product_id": "latte",
-        "name": "Caffe Latte",
-        "description": "Espresso with steamed milk",
-        "price": 3.5,
+        "name": "Manty",
+        "description": "Meath in dough",
+        "price": 5,
         "ingredients": [
             {
-                "ingredient_id": "espresso_shot",
-                "quantity": 1
-            },
-            {
-                "ingredient_id": "milk",
-                "quantity": 200
+                "ingredient_id": "flour",
+                "quantity": 500
             }
         ]
     },
@@ -36,10 +32,22 @@
         ]
     },
     {
+        "product_id": "manty",
+        "name": "Manty",
+        "description": "Meath in dough",
+        "price": 5,
+        "ingredients": [
+            {
+                "ingredient_id": "flour",
+                "quantity": 500
+            }
+        ]
+    },
+    {
         "product_id": "espresso",
         "name": "Espresso",
-        "description": "Strong and bold coffee",
-        "price": 3,
+        "description": "Coffee",
+        "price": 2.5,
         "ingredients": [
             {
                 "ingredient_id": "espresso_shot",

@@ -2,13 +2,13 @@ package main
 
 import (
 	"fmt"
-	"hot-coffee/mainhelpers"
+	"hot-coffee/Execution"
 	"os"
 )
 
 func main() {
 	Help(os.Args)
-	mainhelpers.ExecuteProgram()
+	Execution.ExecuteProgram()
 }
 
 func Help(s []string) {

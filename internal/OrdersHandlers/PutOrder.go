@@ -46,7 +46,7 @@ func Putorder(w http.ResponseWriter, r *http.Request, OrderID string) {
 			Orders[i].CustomerName = RequestrOrder.CustomerName
 			Orders[i].ID = OrderID
 			Orders[i].Items = RequestrOrder.Items
-			Orders[i].Status = RequestrOrder.Status
+			Orders[i].Status = "open"
 		}
 	}
 

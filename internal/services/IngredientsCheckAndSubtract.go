@@ -55,10 +55,6 @@ func MenuCheck2(NewItem models.MenuItem) bool { // Надо проверить �
 }
 
 func IngredientsCheck(w http.ResponseWriter, order models.Order) bool { // Проверка на ингредиенты
-	if !MenuCheck(w, order) {
-		ErrorHandler.Error(w, "Your order is not in menu, please check again our menu", http.StatusBadRequest)
-		return false
-	}
 	menucontent, err := ioutil.ReadFile(config.BaseDir + "/menu_items.json")
 	if err != nil {
 		// TO DO

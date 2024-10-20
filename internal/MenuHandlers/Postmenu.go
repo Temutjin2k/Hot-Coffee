@@ -27,7 +27,7 @@ func MenuPost(w http.ResponseWriter, r *http.Request) {
 	var MenuItems []models.MenuItem
 	content, err := ioutil.ReadFile(config.BaseDir + "/menu_items.json") // ioutil.ReadFile() читает файл и возвращает содержимое в массие из байтов
 	if err != nil {
-		ErrorHandler.Error(w, "Could not read orders from server", http.StatusInternalServerError)
+		ErrorHandler.Error(w, "Could not read menu items from server", http.StatusInternalServerError)
 		return
 	}
 	json.Unmarshal(content, &MenuItems) // json.Unmarshal([]byte, type any) короче из инфы в байтах он конвертирует все в структуру в стиле json

@@ -1,9 +1,9 @@
-package mainhelpers
+package Execution
 
 import (
 	"fmt"
 	"hot-coffee/config"
-	"hot-coffee/internal/handler"
+	"hot-coffee/internal/Mainhandlers"
 	"io"
 	"net/http"
 	"os"
@@ -14,18 +14,34 @@ import (
 var BaseDir string
 
 func ExecuteProgram() {
+	user, err := user.Current() // Создаем объект user, а уже из него достаем основную директорию user.HomeDir
+	if err != nil {
+		fmt.Println("Error getting user home directory")
+		os.Exit(1)
+	}
 	dir, port := config.Flagchecker()
-	CreateDir(dir)
-	http.HandleFunc("/menu/", handler.MenuHandler)
-	http.HandleFunc("/orders", handler.OrderHandler)
-	http.HandleFunc("/orders/", handler.OrderHandler)
-	http.HandleFunc("/inventory", handler.InventoryHandler)
+	path := filepath.Join(user.HomeDir, "hot-coffee", dir)
+	if !directoryExists(path) {
+		CreateDir(dir)
+	}
+	http.HandleFunc("/menu", Mainhandlers.MenuHandler)
+	http.HandleFunc("/orders", Mainhandlers.OrderHandler)
+	http.HandleFunc("/orders/", Mainhandlers.OrderHandler)
+	http.HandleFunc("/inventory", Mainhandlers.InventoryHandler)
 
-	err := http.ListenAndServe(":"+port, nil)
+	err = http.ListenAndServe(":"+port, nil)
 	if err != nil {
 		fmt.Println("Error starting server")
 		return
 	}
+}
+
+func directoryExists(path string) bool {
+	info, err := os.Stat(path)
+	if os.IsNotExist(err) {
+		return false
+	}
+	return info.IsDir()
 }
 
 func CreateDir(dir string) {
@@ -48,7 +64,7 @@ func CreateDir(dir string) {
 	path = filepath.Join(user.HomeDir, "hot-coffee", "data")
 	entries, err := os.ReadDir(path)
 	if err != nil {
-		fmt.Println("Something went wrong when 4creating a data directory")
+		fmt.Println("Something went wrong when creating a data directory")
 		os.Exit(1)
 	}
 
@@ -57,7 +73,7 @@ func CreateDir(dir string) {
 		dstPath := filepath.Join(user.HomeDir, "hot-coffee", BaseDir, entry.Name())
 		err := copyFile(scrPath, dstPath)
 		if err != nil {
-			fmt.Println("Something went wrong when 3creating a data directory")
+			fmt.Println("Something went wrong when creating a data directory")
 			os.Exit(1)
 		}
 	}
@@ -69,13 +85,13 @@ func CreateDir(dir string) {
 func copyFile(src string, dst string) error {
 	sourceFile, err := os.Open(src)
 	if err != nil {
-		fmt.Println("Something went wrong when 2creating a data directory")
+		fmt.Println("Something went wrong when creating a data directory")
 		os.Exit(1)
 	}
 	defer sourceFile.Close()
 	dstFile, err := os.Create(dst)
 	if err != nil {
-		fmt.Println("Something went wrong when 1creating a data directory")
+		fmt.Println("Something went wrong when creating a data directory")
 		os.Exit(1)
 	}
 	defer dstFile.Close()

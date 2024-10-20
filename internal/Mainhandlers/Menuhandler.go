@@ -1,22 +1,21 @@
-package handler
+package Mainhandlers
 
 import (
 	"fmt"
 	"hot-coffee/internal/ErrorHandler"
 	"hot-coffee/internal/MenuHandlers"
-	"hot-coffee/internal/OrdersHandlers"
 	"net/http"
 	"strings"
 )
 
 func MenuHandler(w http.ResponseWriter, r *http.Request) {
-	Parts := strings.SplitN(r.URL.Path[1:], "/", 2)
-	fmt.Println(Parts)
-	fmt.Println(len(Parts))
+	Parts := strings.Split(r.URL.Path[1:], "/")
 	switch len(Parts) {
 	case 1:
+		fmt.Println(r.Method)
 		switch r.Method {
 		case http.MethodPost:
+
 			MenuHandlers.MenuPost(w, r)
 		case http.MethodGet:
 			MenuHandlers.GetMenuItems(w)
@@ -30,9 +29,11 @@ func MenuHandler(w http.ResponseWriter, r *http.Request) {
 		case http.MethodGet:
 			MenuHandlers.GetMenuItem(w, Parts[1])
 		case http.MethodDelete:
-			OrdersHandlers.Deleteorder(w, Parts[1])
+			MenuHandlers.MenuDelete(w, Parts[1])
 		default:
 			ErrorHandler.Error(w, "Method is not allowed", http.StatusMethodNotAllowed)
 		}
+	default:
+		ErrorHandler.Error(w, "Something wrong with your request", http.StatusBadRequest)
 	}
 }
