@@ -1,13 +1,14 @@
-package OrdersHandlers
+package orderHandler
 
 import (
 	"encoding/json"
-	"hot-coffee/config"
-	"hot-coffee/internal/ErrorHandler"
-	"hot-coffee/models"
 	"io/ioutil"
 	"net/http"
 	"os"
+
+	"hot-coffee/config"
+	"hot-coffee/internal/ErrorHandler"
+	"hot-coffee/models"
 )
 
 func Deleteorder(w http.ResponseWriter, ObjectID string) {

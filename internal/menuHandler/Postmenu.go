@@ -1,14 +1,14 @@
-package MenuHandlers
+package menuHandler
 
 import (
 	"encoding/json"
+	"net/http"
+	"os"
+
 	"hot-coffee/config"
 	"hot-coffee/internal/ErrorHandler"
 	"hot-coffee/internal/services"
 	"hot-coffee/models"
-	"io/ioutil"
-	"net/http"
-	"os"
 )
 
 func MenuPost(w http.ResponseWriter, r *http.Request) {
@@ -25,7 +25,7 @@ func MenuPost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var MenuItems []models.MenuItem
-	content, err := ioutil.ReadFile(config.BaseDir + "/menu_items.json") // ioutil.ReadFile() читает файл и возвращает содержимое в массие из байтов
+	content, err := os.ReadFile(config.BaseDir + "/menu_items.json") // ioutil.ReadFile() читает файл и возвращает содержимое в массие из байтов
 	if err != nil {
 		ErrorHandler.Error(w, "Could not read menu items from server", http.StatusInternalServerError)
 		return
@@ -41,7 +41,7 @@ func MenuPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = os.WriteFile(config.BaseDir+"/menu_items.json", jsonData, 0644) // os.WriteFile(filename, content, perm) в файл записывает данные
+	err = os.WriteFile(config.BaseDir+"/menu_items.json", jsonData, 0o644) // os.WriteFile(filename, content, perm) в файл записывает данные
 	if err != nil {
 		ErrorHandler.Error(w, "Could not write orders to json database", http.StatusInternalServerError)
 		return

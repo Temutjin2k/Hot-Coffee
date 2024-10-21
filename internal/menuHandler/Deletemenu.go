@@ -1,13 +1,14 @@
-package MenuHandlers
+package menuHandler
 
 import (
 	"encoding/json"
-	"hot-coffee/config"
-	"hot-coffee/internal/ErrorHandler"
-	"hot-coffee/models"
 	"io/ioutil"
 	"net/http"
 	"os"
+
+	"hot-coffee/config"
+	"hot-coffee/internal/ErrorHandler"
+	"hot-coffee/models"
 )
 
 func MenuDelete(w http.ResponseWriter, MenuItemID string) {

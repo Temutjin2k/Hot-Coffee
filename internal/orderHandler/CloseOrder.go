@@ -1,18 +1,18 @@
-package OrdersHandlers
+package orderHandler
 
 import (
 	"encoding/json"
-	"hot-coffee/config"
-	"hot-coffee/internal/ErrorHandler"
-	"hot-coffee/internal/services"
-	"hot-coffee/models"
-	"io/ioutil"
 	"net/http"
 	"os"
+
+	"hot-coffee/config"
+	"hot-coffee/internal/ErrorHandler"
+	"hot-coffee/internal/service"
+	"hot-coffee/models"
 )
 
 func Closeorder(w http.ResponseWriter, OrderID string) {
-	OrderContents, err := ioutil.ReadFile(config.BaseDir + "/orders.json")
+	OrderContents, err := os.ReadFile(config.BaseDir + "/orders.json")
 	if err != nil {
 		ErrorHandler.Error(w, "Could not read orders from server", http.StatusInternalServerError)
 		return
@@ -40,13 +40,13 @@ func Closeorder(w http.ResponseWriter, OrderID string) {
 		}
 	}
 
-	services.SubtractIngridients(w, ClosingOrder)
+	service.SubtractIngridients(w, ClosingOrder)
 	jsondata, err := json.MarshalIndent(Orders, "", "    ")
 	if err != nil {
 		ErrorHandler.Error(w, "Could not upload order", http.StatusInternalServerError)
 		return
 	}
-	err = ioutil.WriteFile(config.BaseDir+"/orders.json", jsondata, os.ModePerm)
+	err = os.WriteFile(config.BaseDir+"/orders.json", jsondata, os.ModePerm)
 	if err != nil {
 		ErrorHandler.Error(w, "Could not rewrite orders", http.StatusInternalServerError)
 		return

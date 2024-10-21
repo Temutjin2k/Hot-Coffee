@@ -1,15 +1,16 @@
-package OrdersHandlers
+package orderHandler
 
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"net/http"
+	"os"
+
 	"hot-coffee/config"
 	"hot-coffee/internal/ErrorHandler"
 	"hot-coffee/internal/services"
 	"hot-coffee/models"
-	"io/ioutil"
-	"net/http"
-	"os"
 )
 
 func Putorder(w http.ResponseWriter, r *http.Request, OrderID string) {

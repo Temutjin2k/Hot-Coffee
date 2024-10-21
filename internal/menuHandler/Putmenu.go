@@ -1,19 +1,19 @@
-package MenuHandlers
+package menuHandler
 
 import (
 	"encoding/json"
 	"fmt"
+	"net/http"
+	"os"
+
 	"hot-coffee/config"
 	"hot-coffee/internal/ErrorHandler"
 	"hot-coffee/internal/services"
 	"hot-coffee/models"
-	"io/ioutil"
-	"net/http"
-	"os"
 )
 
 func MenuPut(w http.ResponseWriter, r *http.Request, MenuItemID string) {
-	RequestContent, err := ioutil.ReadAll(r.Body)
+	RequestContent, err := os.ReadAll(r.Body)
 	if err != nil {
 		ErrorHandler.Error(w, "Could not read request body", http.StatusBadRequest)
 		return
@@ -30,7 +30,7 @@ func MenuPut(w http.ResponseWriter, r *http.Request, MenuItemID string) {
 		ErrorHandler.Error(w, "The menu item you want to update does not exist in menu", http.StatusNotFound)
 	}
 
-	MenuContent, err := ioutil.ReadFile(config.BaseDir + "/menu_items.json")
+	MenuContent, err := os.ReadFile(config.BaseDir + "/menu_items.json")
 	if err != nil {
 		ErrorHandler.Error(w, "Could not read menu items from server", http.StatusInternalServerError)
 		return
@@ -54,7 +54,7 @@ func MenuPut(w http.ResponseWriter, r *http.Request, MenuItemID string) {
 		ErrorHandler.Error(w, "Could not upload menu items to server", http.StatusInternalServerError)
 		return
 	}
-	err = ioutil.WriteFile(config.BaseDir+"/menu_items.json", jsondata, os.ModePerm)
+	err = os.WriteFile(config.BaseDir+"/menu_items.json", jsondata, os.ModePerm)
 	if err != nil {
 		ErrorHandler.Error(w, "Could not rewrite orders", http.StatusInternalServerError)
 		return

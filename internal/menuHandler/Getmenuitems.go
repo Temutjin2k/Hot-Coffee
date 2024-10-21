@@ -1,12 +1,13 @@
-package MenuHandlers
+package menuHandler
 
 import (
 	"encoding/json"
+	"net/http"
+	"os"
+
 	"hot-coffee/config"
 	"hot-coffee/internal/ErrorHandler"
 	"hot-coffee/models"
-	"net/http"
-	"os"
 )
 
 func GetMenuItems(w http.ResponseWriter) {

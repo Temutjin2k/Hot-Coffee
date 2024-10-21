@@ -1,16 +1,17 @@
-package OrdersHandlers
+package orderHandler
 
 import (
 	"encoding/json"
-	"hot-coffee/config"
-	"hot-coffee/internal/ErrorHandler"
-	"hot-coffee/internal/services"
-	"hot-coffee/models"
 	"io/ioutil"
 	"net/http"
 	"os"
 	"strconv"
 	"time"
+
+	"hot-coffee/config"
+	"hot-coffee/internal/ErrorHandler"
+	"hot-coffee/internal/service"
+	"hot-coffee/models"
 )
 
 func PostOrder(w http.ResponseWriter, r *http.Request) {
@@ -21,11 +22,11 @@ func PostOrder(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if !services.MenuCheck(w, order) {
+	if !service.MenuCheck(w, order) {
 		ErrorHandler.Error(w, "Your order does not exist in menu", http.StatusBadRequest)
 		return
 	}
-	if !services.IngredientsCheck(w, order) {
+	if !service.IngredientsCheck(w, order) {
 		ErrorHandler.Error(w, "Not enough ingedients or needed ingerdients do not exist", http.StatusBadRequest)
 		return
 	}
@@ -38,8 +39,7 @@ func PostOrder(w http.ResponseWriter, r *http.Request) {
 	}
 	json.Unmarshal(content, &orders) // json.Unmarshal([]byte, type any) короче из инфы в байтах он конвертирует все в структуру в стиле json
 
-	Location, err := time.LoadLocation("Asia/Aqtau")
-	timenow := time.Now().In(Location).Format(time.RFC3339)
+	timenow := time.Now().Format(time.RFC3339)
 	order.CreatedAt = timenow
 	order.ID = strconv.Itoa(GetID(w))
 	order.Status = "open"
@@ -53,7 +53,7 @@ func PostOrder(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = os.WriteFile(config.BaseDir+"/orders.json", jsonData, 0644) // os.WriteFile(filename, content, perm) в файл записывает данные
+	err = os.WriteFile(config.BaseDir+"/orders.json", jsonData, 0o644) // os.WriteFile(filename, content, perm) в файл записывает данные
 	if err != nil {
 		ErrorHandler.Error(w, "Could not write orders to json database", http.StatusInternalServerError)
 		return
@@ -73,6 +73,9 @@ func GetID(w http.ResponseWriter) int {
 	i := ID.ID
 	ID.ID++
 	NewContent, err := json.MarshalIndent(ID, "", "    ")
+	if err != nil {
+		// TODO
+	}
 	os.WriteFile(config.BaseDir+"/config.json", NewContent, os.ModePerm)
 	return i
 }

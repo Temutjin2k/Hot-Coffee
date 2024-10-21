@@ -2,8 +2,9 @@ package ErrorHandler
 
 import (
 	"encoding/json"
-	"hot-coffee/models"
 	"net/http"
+
+	"hot-coffee/models"
 )
 
 func Error(w http.ResponseWriter, ErrorText string, code int) {

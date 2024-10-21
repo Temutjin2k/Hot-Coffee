@@ -1,12 +1,13 @@
-package OrdersHandlers
+package orderHandler
 
 import (
 	"encoding/json"
+	"io/ioutil"
+	"net/http"
+
 	"hot-coffee/config"
 	"hot-coffee/internal/ErrorHandler"
 	"hot-coffee/models"
-	"io/ioutil"
-	"net/http"
 )
 
 func GetOrders(w http.ResponseWriter) {

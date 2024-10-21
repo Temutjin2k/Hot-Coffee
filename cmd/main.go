@@ -2,29 +2,56 @@ package main
 
 import (
 	"fmt"
-	"hot-coffee/Execution"
+	"log"
+	"net/http"
 	"os"
+	"os/user"
+	"path/filepath"
+
+	"hot-coffee/config"
+	"hot-coffee/internal/dal"
+	"hot-coffee/internal/handler"
+	"hot-coffee/internal/service"
+	"hot-coffee/utils"
 )
 
 func main() {
-	Help(os.Args)
-	Execution.ExecuteProgram()
-}
-
-func Help(s []string) {
-	for _, v := range s {
-		if v == "--help" || v == "-help" || v == "-h" {
-			fmt.Println(`Coffee Shop Management System
-
-Usage:
-	hot-coffee [--port <N>] [--dir <S>] 
-	hot-coffee --help
-			
-Options:
-	--help       Show this screen.
-	--port N     Port number.
-	--dir S      Path to the data directory.`)
-			os.Exit(0)
-		}
+	utils.Help(os.Args)
+	user, err := user.Current() // Создаем объект user, а уже из него достаем основную директорию user.HomeDir
+	if err != nil {
+		fmt.Println("Error getting user home directory")
+		os.Exit(1)
 	}
+
+	dir, port := config.Flagchecker()
+	path := filepath.Join(user.HomeDir, "hot-coffee", dir)
+
+	if !utils.DirectoryExists(path) {
+		utils.CreateDir(dir)
+	}
+	// Initialize repositories
+	menuRepo := dal.NewMenuRepository()
+	inventoryRepo := dal.NewInventoryRepository()
+	orderRepo := dal.NewOrderRepository() // Initialize the order repository
+
+	// Initialize services
+	menuService := service.NewMenuService(*menuRepo, *inventoryRepo)
+	orderService := service.NewOrderService(*orderRepo) // Initialize the order service
+
+	// Initialize handlers
+	menuHandler := handler.NewMenuHandler(menuService)
+	orderHandler := handler.NewOrderHandler(orderService) // Pass the order service
+	inventoryHandler := handler.NewInventoryHandler()
+	reportsHandler := handler.NewReportsHandler()
+
+	// Setup HTTP routes
+	mux := http.NewServeMux()
+	mux.HandleFunc("/menu", menuHandler.MenuPost)
+	mux.HandleFunc("/orders", orderHandler.OrderHandler)
+	mux.HandleFunc("/orders/", orderHandler.OrderHandler)
+	mux.HandleFunc("/inventory", inventoryHandler.InventoryHandler)
+	mux.HandleFunc("/reports/total-sales", reportsHandler.TotalSalesHandler)
+	mux.HandleFunc("/reports/popular-items", reportsHandler.PopularItemsHandler)
+
+	log.Fatal(http.ListenAndServe(":"+port, mux))
 }

@@ -1,42 +1,16 @@
-package Execution
+package utils
 
 import (
 	"fmt"
-	"hot-coffee/config"
-	"hot-coffee/internal/Mainhandlers"
 	"io"
-	"net/http"
 	"os"
 	"os/user"
 	"path/filepath"
+
+	"hot-coffee/config"
 )
 
-var BaseDir string
-
-func ExecuteProgram() {
-	user, err := user.Current() // Создаем объект user, а уже из него достаем основную директорию user.HomeDir
-	if err != nil {
-		fmt.Println("Error getting user home directory")
-		os.Exit(1)
-	}
-	dir, port := config.Flagchecker()
-	path := filepath.Join(user.HomeDir, "hot-coffee", dir)
-	if !directoryExists(path) {
-		CreateDir(dir)
-	}
-	http.HandleFunc("/menu", Mainhandlers.MenuHandler)
-	http.HandleFunc("/orders", Mainhandlers.OrderHandler)
-	http.HandleFunc("/orders/", Mainhandlers.OrderHandler)
-	http.HandleFunc("/inventory", Mainhandlers.InventoryHandler)
-
-	err = http.ListenAndServe(":"+port, nil)
-	if err != nil {
-		fmt.Println("Error starting server")
-		return
-	}
-}
-
-func directoryExists(path string) bool {
+func DirectoryExists(path string) bool {
 	info, err := os.Stat(path)
 	if os.IsNotExist(err) {
 		return false
@@ -44,8 +18,26 @@ func directoryExists(path string) bool {
 	return info.IsDir()
 }
 
+func Help(s []string) {
+	for _, v := range s {
+		if v == "--help" || v == "-help" || v == "-h" {
+			fmt.Println(`Coffee Shop Management System
+
+Usage:
+	hot-coffee [--port <N>] [--dir <S>] 
+	hot-coffee --help
+			
+Options:
+	--help       Show this screen.
+	--port N     Port number.
+	--dir S      Path to the data directory.`)
+			os.Exit(0)
+		}
+	}
+}
+
 func CreateDir(dir string) {
-	BaseDir = dir
+	config.BaseDir = dir
 
 	user, err := user.Current() // Создаем объект user, а уже из него достаем основную директорию user.HomeDir
 	if err != nil {
@@ -70,7 +62,7 @@ func CreateDir(dir string) {
 
 	for _, entry := range entries {
 		scrPath := filepath.Join(user.HomeDir, "hot-coffee", "data", entry.Name())
-		dstPath := filepath.Join(user.HomeDir, "hot-coffee", BaseDir, entry.Name())
+		dstPath := filepath.Join(user.HomeDir, "hot-coffee", config.BaseDir, entry.Name())
 		err := copyFile(scrPath, dstPath)
 		if err != nil {
 			fmt.Println("Something went wrong when creating a data directory")
@@ -78,7 +70,7 @@ func CreateDir(dir string) {
 		}
 	}
 	scrPath := filepath.Join(user.HomeDir, "hot-coffee", "config", "config.json")
-	dstPath := filepath.Join(user.HomeDir, "hot-coffee", BaseDir, "config.json")
+	dstPath := filepath.Join(user.HomeDir, "hot-coffee", config.BaseDir, "config.json")
 	copyFile(scrPath, dstPath)
 }
 
