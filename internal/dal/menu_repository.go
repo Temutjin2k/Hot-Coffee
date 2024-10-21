@@ -36,3 +36,11 @@ func (repo *MenuRepository) Exists(itemID string) bool {
 	}
 	return false
 }
+
+func (repo *MenuRepository) SaveAll(menuItems []models.MenuItem) error {
+	jsonData, err := json.MarshalIndent(menuItems, "", "    ")
+	if err != nil {
+		return err
+	}
+	return os.WriteFile(config.BaseDir+"/menu_items.json", jsonData, 0o644)
+}

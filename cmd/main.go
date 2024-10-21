@@ -32,17 +32,17 @@ func main() {
 	// Initialize repositories
 	menuRepo := dal.NewMenuRepository()
 	inventoryRepo := dal.NewInventoryRepository()
-	orderRepo := dal.NewOrderRepository() // Initialize the order repository
+	orderRepo := dal.NewOrderRepository()
 
 	// Initialize services
 	menuService := service.NewMenuService(*menuRepo, *inventoryRepo)
-	orderService := service.NewOrderService(*orderRepo) // Initialize the order service
+	orderService := service.NewOrderService(*orderRepo)
 
 	// Initialize handlers
 	menuHandler := handler.NewMenuHandler(menuService)
-	orderHandler := handler.NewOrderHandler(orderService) // Pass the order service
-	inventoryHandler := handler.NewInventoryHandler()
-	reportsHandler := handler.NewReportsHandler()
+	orderHandler := handler.NewOrderHandler(orderService)
+	inventoryHandler := handler.NewInventoryHandler()     // TODO
+	aggregationHandler := handler.NewAggregationHandler() // TODO
 
 	// Setup HTTP routes
 	mux := http.NewServeMux()
@@ -50,8 +50,8 @@ func main() {
 	mux.HandleFunc("/orders", orderHandler.OrderHandler)
 	mux.HandleFunc("/orders/", orderHandler.OrderHandler)
 	mux.HandleFunc("/inventory", inventoryHandler.InventoryHandler)
-	mux.HandleFunc("/reports/total-sales", handler.TotalSalesHandler)
-	mux.HandleFunc("/reports/popular-items", handler.PopularItemsHandler)
+	mux.HandleFunc("/reports/total-sales", aggregationHandler.TotalSalesHandler)
+	mux.HandleFunc("/reports/popular-items", aggregationHandler.PopularItemsHandler)
 
 	log.Fatal(http.ListenAndServe(":"+port, mux))
 }

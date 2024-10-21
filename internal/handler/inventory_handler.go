@@ -2,5 +2,11 @@ package handler
 
 import "net/http"
 
-func InventoryHandler(w http.ResponseWriter, r *http.Request) {
+type InventoryHandler struct{}
+
+func NewInventoryHandler() *InventoryHandler {
+	return &InventoryHandler{}
+}
+
+func (h *InventoryHandler) InventoryHandler(w http.ResponseWriter, r *http.Request) {
 }

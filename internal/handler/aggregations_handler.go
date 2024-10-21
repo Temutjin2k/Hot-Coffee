@@ -2,13 +2,19 @@ package handler
 
 import "net/http"
 
-func TotalSalesHandler(w http.ResponseWriter, r *http.Request) {
+type AggregationHandler struct{}
+
+func NewAggregationHandler() *AggregationHandler {
+	return &AggregationHandler{}
+}
+
+func (h *AggregationHandler) TotalSalesHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		// TODO
 	}
 }
 
-func PopularItemsHandler(w http.ResponseWriter, r *http.Request) {
+func (h *AggregationHandler) PopularItemsHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		// TODO
 	}
