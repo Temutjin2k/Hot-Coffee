@@ -14,7 +14,7 @@ type MenuHandler struct {
 	menuService *service.MenuService
 }
 
-func (h *MenuHandler) NewMenuHandler(menuService *service.MenuService) *MenuHandler {
+func NewMenuHandler(menuService *service.MenuService) *MenuHandler {
 	return &MenuHandler{menuService: menuService}
 }
 

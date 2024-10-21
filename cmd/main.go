@@ -46,12 +46,12 @@ func main() {
 
 	// Setup HTTP routes
 	mux := http.NewServeMux()
-	mux.HandleFunc("/menu", menuHandler.MenuPost)
+	mux.HandleFunc("/menu", menuHandler.MenuHandler)
 	mux.HandleFunc("/orders", orderHandler.OrderHandler)
 	mux.HandleFunc("/orders/", orderHandler.OrderHandler)
 	mux.HandleFunc("/inventory", inventoryHandler.InventoryHandler)
-	mux.HandleFunc("/reports/total-sales", reportsHandler.TotalSalesHandler)
-	mux.HandleFunc("/reports/popular-items", reportsHandler.PopularItemsHandler)
+	mux.HandleFunc("/reports/total-sales", handler.TotalSalesHandler)
+	mux.HandleFunc("/reports/popular-items", handler.PopularItemsHandler)
 
 	log.Fatal(http.ListenAndServe(":"+port, mux))
 }
