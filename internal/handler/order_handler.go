@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	"hot-coffee/internal/ErrorHandler"
-	"hot-coffee/internal/orderHandler"
 	"hot-coffee/internal/service"
 	"hot-coffee/models"
 )
@@ -46,7 +45,7 @@ func (h *OrderHandler) OrderHandler(w http.ResponseWriter, r *http.Request) {
 	case 3:
 		if r.Method == http.MethodPost {
 			if parts[2] == "close" {
-				orderHandler.Closeorder(w, parts[1])
+				h.CloseOrder(w, r)
 			} else {
 				ErrorHandler.Error(w, "Adress is not allowed", http.StatusForbidden)
 			}

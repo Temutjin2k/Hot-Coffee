@@ -7,7 +7,8 @@ import (
 
 	"hot-coffee/config"
 	"hot-coffee/internal/ErrorHandler"
-	"hot-coffee/internal/services"
+	"hot-coffee/internal/service"
+
 	"hot-coffee/models"
 )
 
@@ -18,8 +19,7 @@ func MenuPost(w http.ResponseWriter, r *http.Request) {
 		ErrorHandler.Error(w, "Could not decode request json data", http.StatusBadRequest)
 		return
 	}
-
-	if services.MenuCheck2(NewItem) {
+	if service.MenuCheck2(NewItem) {
 		ErrorHandler.Error(w, "The requested menu item already exists in current menu", http.StatusBadRequest)
 		return
 	}
