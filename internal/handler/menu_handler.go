@@ -39,7 +39,7 @@ func (h *MenuHandler) PostMenu(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (h *MenuHandler) GetMenuItems(w http.ResponseWriter, r *http.Request) {
+func (h *MenuHandler) GetMenu(w http.ResponseWriter, r *http.Request) {
 	MenuItems, err := h.menuService.GetMenuItems()
 	if err != nil {
 		ErrorHandler.Error(w, "Could not read menu database", http.StatusInternalServerError)
@@ -63,7 +63,7 @@ func (h *MenuHandler) GetMenuItem(w http.ResponseWriter, r *http.Request) {
 	h.logger.Info("Request handled successfully.", "method", r.Method, "url", r.URL)
 }
 
-func (h *MenuHandler) PutMenu(w http.ResponseWriter, r *http.Request) {
+func (h *MenuHandler) PutMenuItem(w http.ResponseWriter, r *http.Request) {
 	err := h.menuService.UpdateMenuItem(r)
 	if err != nil {
 		h.logger.Error("Could not update menu database", "error", err, "method", r.Method, "url", r.URL)
@@ -74,7 +74,7 @@ func (h *MenuHandler) PutMenu(w http.ResponseWriter, r *http.Request) {
 	h.logger.Info("Request handled successfully.", "method", r.Method, "url", r.URL)
 }
 
-func (h *MenuHandler) DeleteMenu(w http.ResponseWriter, r *http.Request) {
+func (h *MenuHandler) DeleteMenuItem(w http.ResponseWriter, r *http.Request) {
 	err := h.menuService.DeleteMenuItem(r.PathValue("id"))
 	if err != nil {
 		h.logger.Error("Could not delete menu item", "error", err, "method", r.Method, "url", r.URL)
