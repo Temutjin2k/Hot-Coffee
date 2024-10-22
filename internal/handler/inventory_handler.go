@@ -24,14 +24,14 @@ func (h *InventoryHandler) PostInventory(w http.ResponseWriter, r *http.Request)
 	err := json.NewDecoder(r.Body).Decode(&newItem)
 	if err != nil {
 		h.logger.Error("Could not decode json data", "error", err, "method", r.Method, "url", r.URL)
-		ErrorHandler.Error(w, "Could not decode request json data", http.StatusBadRequest)
+		ErrorHandler.Error(w, "Could not decode request json data", http.StatusInternalServerError)
 		return
 	}
 
 	err = h.inventoryService.AddInventoryItem(newItem)
 	if err != nil {
 		h.logger.Error("Could not add new inventory item", "error", err, "method", r.Method, "url", r.URL)
-		ErrorHandler.Error(w, "Could not add new inventory item", http.StatusBadRequest)
+		ErrorHandler.Error(w, "Could not add new inventory item", http.StatusInternalServerError)
 		return
 	}
 
