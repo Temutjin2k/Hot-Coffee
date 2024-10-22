@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"hot-coffee/internal/ErrorHandler"
 	"hot-coffee/internal/service"
 )
 
@@ -18,7 +19,7 @@ func NewAggregationHandler(orderService *service.OrderService) *AggregationHandl
 // Return all saled items as key and quantity as value in JSON
 func (h *AggregationHandler) TotalSalesHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
-		// TODO
+		ErrorHandler.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
 	totalSales, err := h.orderService.GetTotalSales()
@@ -34,7 +35,7 @@ func (h *AggregationHandler) TotalSalesHandler(w http.ResponseWriter, r *http.Re
 // Returns Each item as key and quatity as value
 func (h *AggregationHandler) PopularItemsHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
-		// TODO
+		ErrorHandler.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
 	popularItems, err := h.orderService.GetPopularItems(3)

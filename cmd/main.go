@@ -41,7 +41,7 @@ func main() {
 	// Initialize services (Business Logic Layer)
 	menuService := service.NewMenuService(*menuRepo, *inventoryRepo)
 	orderService := service.NewOrderService(*orderRepo)
-	inventoryService := service.NewInventoryService(*inventoryRepo)
+	inventoryService := service.NewInventoryService(*inventoryRepo) // TODO
 
 	// Initialize handlers (Presentation Layer)
 	menuHandler := handler.NewMenuHandler(menuService)
@@ -53,7 +53,7 @@ func main() {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/menu", menuHandler.MenuHandler)
 	mux.HandleFunc("/orders", orderHandler.OrderHandler)
-	mux.HandleFunc("/orders/", orderHandler.OrderHandler)
+	mux.HandleFunc("/orders/{id}", orderHandler.OrderHandler)
 	mux.HandleFunc("/inventory", inventoryHandler.InventoryHandler)
 	mux.HandleFunc("/reports/total-sales", reportHandler.TotalSalesHandler)
 	mux.HandleFunc("/reports/popular-items", reportHandler.PopularItemsHandler)
