@@ -91,6 +91,7 @@ func (s *OrderService) GetTotalSales() (models.TotalSales, error) {
 	return totalSales, nil
 }
 
+// Returns Popular Items sorted in decreasing order. Number of returned items depends on passing value(popularItemsNum)
 func (s *OrderService) GetPopularItems(popularItemsNum int) (models.PopularItems, error) {
 	existingOrders, err := s.orderRepo.GetAll()
 	if err != nil {

@@ -1,11 +1,17 @@
 package handler
 
-import "net/http"
+import (
+	"net/http"
 
-type InventoryHandler struct{}
+	"hot-coffee/internal/service"
+)
 
-func NewInventoryHandler() *InventoryHandler {
-	return &InventoryHandler{}
+type InventoryHandler struct {
+	inventoryService *service.InventoryService
+}
+
+func NewInventoryHandler(inventoryService *service.InventoryService) *InventoryHandler {
+	return &InventoryHandler{inventoryService: inventoryService}
 }
 
 func (h *InventoryHandler) InventoryHandler(w http.ResponseWriter, r *http.Request) {
