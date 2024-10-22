@@ -53,7 +53,7 @@ func main() {
 	inventoryService := service.NewInventoryService(*inventoryRepo) // TODO
 
 	// Initialize handlers (Presentation Layer)
-	orderHandler := handler.NewOrderHandler(orderService, logger)
+	orderHandler := handler.NewOrderHandler(orderService, menuService, logger)
 	menuHandler := handler.NewMenuHandler(menuService, logger)
 	inventoryHandler := handler.NewInventoryHandler(inventoryService, logger) // TODO
 	reportHandler := handler.NewAggregationHandler(orderService, logger)

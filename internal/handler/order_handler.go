@@ -12,24 +12,36 @@ import (
 
 type OrderHandler struct {
 	orderService *service.OrderService
+	menuService  *service.MenuService
 	logger       *slog.Logger
 }
 
 // NewOrderHandler creates a new OrderHandler
-func NewOrderHandler(orderService *service.OrderService, logger *slog.Logger) *OrderHandler {
-	return &OrderHandler{orderService: orderService, logger: logger}
+func NewOrderHandler(orderService *service.OrderService, menuService *service.MenuService, logger *slog.Logger) *OrderHandler {
+	return &OrderHandler{orderService: orderService, menuService: menuService, logger: logger}
 }
 
 // PostOrder creates new Order
 func (h *OrderHandler) PostOrder(w http.ResponseWriter, r *http.Request) {
-	var newOrder models.Order
-	err := json.NewDecoder(r.Body).Decode(&newOrder)
+	var NewOrder models.Order
+	err := json.NewDecoder(r.Body).Decode(&NewOrder)
 	if err != nil {
 		ErrorHandler.Error(w, "Could not decode request json data", http.StatusBadRequest)
 		return
 	}
 
-	err = h.orderService.AddOrder(newOrder)
+	for _, OrderItem := range NewOrder.Items {
+		if !h.menuService.MenuCheckByID(OrderItem.ProductID) {
+			ErrorHandler.Error(w, "Updated order item does not exist in menu", http.StatusBadRequest)
+			return
+		}
+		if !h.menuService.IngredientsCheckByID(OrderItem.ProductID, OrderItem.Quantity) {
+			ErrorHandler.Error(w, "Not enough ingridients for your upddated order", http.StatusBadRequest)
+			return
+		}
+	}
+
+	err = h.orderService.AddOrder(NewOrder)
 	if err != nil {
 		ErrorHandler.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -39,15 +51,10 @@ func (h *OrderHandler) PostOrder(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *OrderHandler) GetOrder(w http.ResponseWriter, r *http.Request) {
-	Orders, err := h.orderService.GetAllOrders()
+	RequestedOrder, err := h.orderService.GetOrder(r.PathValue("id"))
 	if err != nil {
-		ErrorHandler.Error(w, "Can not read order data from server", http.StatusInternalServerError)
-	}
-	var RequestedOrder models.Order
-	for i, Order := range Orders {
-		if Order.ID == r.PathValue("id") {
-			RequestedOrder = Orders[i]
-		}
+		ErrorHandler.Error(w, "Something happened when getting order", http.StatusInternalServerError)
+		return
 	}
 	jsonData, err := json.MarshalIndent(RequestedOrder, "", "    ")
 	if err != nil {
@@ -78,19 +85,45 @@ func (h *OrderHandler) PutOrder(w http.ResponseWriter, r *http.Request) {
 		ErrorHandler.Error(w, "Could not read request body", http.StatusBadRequest)
 		return
 	}
-
-	var RequestrOrder models.Order
-	err = json.Unmarshal(Requestcontent, &RequestrOrder)
+	var RequestedOrder models.Order
+	err = json.Unmarshal(Requestcontent, &RequestedOrder)
 	if err != nil {
 		ErrorHandler.Error(w, "Could not read request body", http.StatusBadRequest)
 		return
 	}
 
-	h.orderService.UpdateOrder(RequestrOrder)
+	for _, OrderItem := range RequestedOrder.Items {
+		if !h.menuService.MenuCheckByID(OrderItem.ProductID) {
+			ErrorHandler.Error(w, "Updated order item does not exist in menu", http.StatusBadRequest)
+			return
+		}
+		if !h.menuService.IngredientsCheckByID(OrderItem.ProductID, OrderItem.Quantity) {
+			ErrorHandler.Error(w, "Not enough ingridients for your upddated order", http.StatusBadRequest)
+			return
+		}
+	}
+	h.orderService.UpdateOrder(RequestedOrder, r.PathValue("id"))
+	w.WriteHeader(200)
 }
 
 func (h *OrderHandler) DeleteOrder(w http.ResponseWriter, r *http.Request) {
+	err := h.orderService.SaveAllOrders(r.PathValue("id"))
+	if err != nil {
+		ErrorHandler.Error(w, "Error updating orders database", http.StatusBadRequest)
+	}
 }
 
 func (h *OrderHandler) CloseOrder(w http.ResponseWriter, r *http.Request) {
+	Order, err := h.orderService.GetOrder(r.PathValue("id"))
+	if err != nil {
+		ErrorHandler.Error(w, "Something happened when getting order", http.StatusInternalServerError)
+		return
+	}
+	for _, item := range Order.Items {
+		err := h.menuService.SubtractIngredientsByID(item.ProductID, item.Quantity)
+		if err != nil {
+			ErrorHandler.Error(w, "Not enough ingridients to close the order", http.StatusInternalServerError)
+		}
+	}
+	h.orderService.CloseOrder(r.PathValue("id"))
 }

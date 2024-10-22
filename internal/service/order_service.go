@@ -45,6 +45,25 @@ func (s *OrderService) GetAllOrders() ([]models.Order, error) {
 	return s.orderRepo.GetAll()
 }
 
+func (s *OrderService) GetOrder(OrderID string) (models.Order, error) {
+	flag := false
+	AllOrders, err := s.orderRepo.GetAll()
+	if err != nil {
+		return models.Order{}, err
+	}
+	var NeededOrder models.Order
+	for i, Order := range AllOrders {
+		if Order.ID == OrderID {
+			flag = true
+			NeededOrder = AllOrders[i]
+		}
+	}
+	if flag {
+		return NeededOrder, nil
+	}
+	return models.Order{}, errors.New("The order does not exist")
+}
+
 // DeleteOrder removes an order by ID
 func (s *OrderService) DeleteOrder(orderID string) error {
 	existingOrders, err := s.orderRepo.GetAll()
@@ -62,19 +81,23 @@ func (s *OrderService) DeleteOrder(orderID string) error {
 }
 
 // UpdateOrder updates an existing order
-func (s *OrderService) UpdateOrder(updatedOrder models.Order) error {
+func (s *OrderService) UpdateOrder(updatedOrder models.Order, OrderID string) error {
 	existingOrders, err := s.orderRepo.GetAll()
 	if err != nil {
 		return err
 	}
 
-	for _, order := range existingOrders {
-		if order.ID == updatedOrder.ID {
-			return s.orderRepo.Update(updatedOrder)
+	for i, order := range existingOrders {
+		if order.ID == OrderID {
+			existingOrders[i].CustomerName = updatedOrder.CustomerName
+			existingOrders[i].ID = OrderID
+			existingOrders[i].Items = updatedOrder.Items
+			existingOrders[i].Status = "Open"
 		}
 	}
 
-	return errors.New("order not found")
+	s.orderRepo.SaveAll(existingOrders)
+	return nil
 }
 
 func (s *OrderService) GetTotalSales() (models.TotalSales, error) {
@@ -126,4 +149,53 @@ func (s *OrderService) GetPopularItems(popularItemsNum int) (models.PopularItems
 
 	popularItems := models.PopularItems{Items: sortedItems[:popularItemsNum]} // potential out of range
 	return popularItems, nil
+}
+
+func (s *OrderService) SaveAllOrders(OrderID string) error {
+	Orders, err := s.GetAllOrders()
+	if err != nil {
+		return err
+	}
+	NewOrders := make([]models.Order, 0)
+	for _, order := range Orders {
+		if order.ID != OrderID {
+			var NewOrder models.Order
+			NewOrder.CreatedAt = order.CreatedAt
+			NewOrder.CustomerName = order.CustomerName
+			NewOrder.ID = order.ID
+			NewOrder.Items = order.Items
+			NewOrder.Status = order.Status
+			NewOrders = append(NewOrders, NewOrder)
+		}
+	}
+	s.orderRepo.SaveAll(NewOrders)
+	return nil
+}
+
+func (s *OrderService) CloseOrder(OrderID string) error {
+	Orders, err := s.orderRepo.GetAll()
+	if err != nil {
+		return nil
+	}
+	var ClosingOrder models.Order
+	for _, order := range Orders {
+		if order.ID == OrderID {
+			ClosingOrder.CreatedAt = order.CreatedAt
+			ClosingOrder.CustomerName = order.CustomerName
+			ClosingOrder.ID = OrderID
+			ClosingOrder.Items = order.Items
+			ClosingOrder.Status = "Closed"
+		}
+	}
+	for i, order := range Orders {
+		if order.ID == OrderID {
+			Orders[i].CreatedAt = ClosingOrder.CreatedAt
+			Orders[i].CustomerName = ClosingOrder.CustomerName
+			Orders[i].ID = OrderID
+			Orders[i].Items = ClosingOrder.Items
+			Orders[i].Status = "Closed"
+		}
+	}
+	s.orderRepo.SaveAll(Orders)
+	return nil
 }

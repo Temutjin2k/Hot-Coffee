@@ -119,6 +119,31 @@ func (s *MenuService) IngredientsCheck(menuItem models.MenuItem, quantity int) b
 	return true // Enough ingredients available
 }
 
+func (s *MenuService) IngredientsCheckByID(menuItemID string, quantity int) bool {
+	menuItems, _ := s.menuRepo.GetAll()
+	ingredientsNeeded := make(map[string]float64)
+
+	for _, item := range menuItems {
+		if item.ID == menuItemID {
+			for _, ingr := range item.Ingredients {
+				ingredientsNeeded[ingr.IngredientID] += float64(ingr.Quantity) * float64(quantity)
+			}
+		}
+	}
+
+	inventoryItems, _ := s.inventoryRepo.GetAll()
+
+	for _, inventoryItem := range inventoryItems {
+		if value, exists := ingredientsNeeded[inventoryItem.IngredientID]; exists {
+			if value > inventoryItem.Quantity {
+				return false // Not enough ingredients
+			}
+		}
+	}
+
+	return true // Enough ingredients available
+}
+
 func (s *MenuService) SubtractIngredients(menuItem models.MenuItem, quantity int) error {
 	if !s.IngredientsCheck(menuItem, quantity) {
 		return errors.New("not enough ingredients or needed ingredients do not exist")
@@ -129,6 +154,25 @@ func (s *MenuService) SubtractIngredients(menuItem models.MenuItem, quantity int
 
 	for _, item := range menuItems {
 		if item.ID == menuItem.ID {
+			for _, ingr := range item.Ingredients {
+				ingredients[ingr.IngredientID] += float64(ingr.Quantity) * float64(quantity)
+			}
+		}
+	}
+
+	return s.inventoryRepo.SubtractIngredients(ingredients)
+}
+
+func (s *MenuService) SubtractIngredientsByID(OrderID string, quantity int) error {
+	if !s.IngredientsCheckByID(OrderID, quantity) {
+		return errors.New("Not enough ingredients or needed ingredients do not exist")
+	}
+
+	ingredients := make(map[string]float64)
+	menuItems, _ := s.menuRepo.GetAll()
+
+	for _, item := range menuItems {
+		if item.ID == OrderID {
 			for _, ingr := range item.Ingredients {
 				ingredients[ingr.IngredientID] += float64(ingr.Quantity) * float64(quantity)
 			}
@@ -170,7 +214,7 @@ func (s *MenuService) GetMenuItem(MenuItemID string) (models.MenuItem, error) {
 	return models.MenuItem{}, err
 }
 
-func (s *MenuService) GetMenu() ([]models.MenuItem, error) {
+func (s *MenuService) GetMenuItems() ([]models.MenuItem, error) {
 	MenuItems, err := s.menuRepo.GetAll()
 	if err != nil {
 		return []models.MenuItem{}, err

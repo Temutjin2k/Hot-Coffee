@@ -46,6 +46,10 @@ func (repo *OrderRepository) Delete(orderID string) error {
 	return nil
 }
 
-func (repo *OrderRepository) Update(order models.Order) error {
-	return nil
+func (repo *OrderRepository) SaveAll(Orders []models.Order) error {
+	jsonData, err := json.MarshalIndent(Orders, "", "    ")
+	if err != nil {
+		return err
+	}
+	return os.WriteFile(config.BaseDir+"/orders.json", jsonData, 0o644)
 }
