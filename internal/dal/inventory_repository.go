@@ -27,6 +27,21 @@ func (repo *InventoryRepository) GetAll() ([]models.InventoryItem, error) {
 	return inventoryItems, err
 }
 
+// Check if ingridient by given ID exists
+func (repo *InventoryRepository) Exists(ID string) bool {
+	inventoryItems, err := repo.GetAll()
+	if err != nil {
+		return false
+	}
+
+	for _, item := range inventoryItems {
+		if item.IngredientID == ID {
+			return true
+		}
+	}
+	return false
+}
+
 func (repo *InventoryRepository) SubtractIngredients(ingredients map[string]float64) error {
 	inventoryItems, err := repo.GetAll()
 	if err != nil {
@@ -45,4 +60,12 @@ func (repo *InventoryRepository) SubtractIngredients(ingredients map[string]floa
 	}
 
 	return os.WriteFile(config.BaseDir+"/inventory.json", jsonData, 0o644)
+}
+
+func (repo *InventoryRepository) SaveAll(items []models.InventoryItem) error {
+	jsonData, err := json.MarshalIndent(items, "", "    ")
+	if err != nil {
+		return err
+	}
+	return os.WriteFile(config.BaseDir+"/menu_items.json", jsonData, 0o644)
 }

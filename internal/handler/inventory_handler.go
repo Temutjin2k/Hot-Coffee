@@ -1,12 +1,13 @@
 package handler
 
 import (
+	"encoding/json"
 	"log/slog"
 	"net/http"
-	"strings"
 
 	"hot-coffee/internal/ErrorHandler"
 	"hot-coffee/internal/service"
+	"hot-coffee/models"
 )
 
 type InventoryHandler struct {
@@ -18,33 +19,22 @@ func NewInventoryHandler(inventoryService *service.InventoryService, logger *slo
 	return &InventoryHandler{inventoryService: inventoryService, logger: logger}
 }
 
-func (h *InventoryHandler) InventoryHandler(w http.ResponseWriter, r *http.Request) {
-	path := strings.Split(r.URL.Path[1:], "/")
-
-	switch len(path) {
-	case 1: // Endpoint: /inventory
-		switch r.Method {
-		case http.MethodPost: // POST /inventory: Add a new inventory item.
-			h.PostInventory(w, r)
-		case http.MethodGet: // GET /inventory: Retrieve all inventory items.
-			h.GetInventory(w, r)
-		}
-	case 2: // Endpoint: /inventory/{id}
-		// Maybe Validation of ID
-		switch r.Method {
-		case http.MethodGet: // GET /inventory/{id}: Retrieve a specific inventory item.
-			h.GetInventoryItem(w, r)
-		case http.MethodPut: // PUT /inventory/{id}: Update an inventory item.
-			h.PutInventoryItem(w, r)
-		case http.MethodDelete: // DELETE /inventory/{id}: Delete an inventory item.
-			h.DeleteInventoryItem(w, r)
-		}
-	default:
-		ErrorHandler.Error(w, "Not Found", http.StatusNotFound)
-	}
-}
-
 func (h *InventoryHandler) PostInventory(w http.ResponseWriter, r *http.Request) {
+	var newItem models.InventoryItem
+	err := json.NewDecoder(r.Body).Decode(&newItem)
+	if err != nil {
+		ErrorHandler.Error(w, "Could not decode request json data", http.StatusBadRequest)
+		return
+	}
+
+	err = h.inventoryService.AddInventoryItem(newItem)
+	if err != nil {
+		ErrorHandler.Error(w, "Could not add new inventory item", http.StatusBadRequest)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	h.logger.Info("Request handled successfully.", "method", r.Method, "url", r.URL)
 }
 
 func (h *InventoryHandler) GetInventory(w http.ResponseWriter, r *http.Request) {

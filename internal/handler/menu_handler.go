@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"log/slog"
 	"net/http"
-	"strings"
 
 	"hot-coffee/internal/ErrorHandler"
 	"hot-coffee/internal/service"
@@ -18,34 +17,6 @@ type MenuHandler struct {
 
 func NewMenuHandler(menuService *service.MenuService, logger *slog.Logger) *MenuHandler {
 	return &MenuHandler{menuService: menuService, logger: logger}
-}
-
-func (h *MenuHandler) MenuHandler(w http.ResponseWriter, r *http.Request) {
-	parts := strings.Split(r.URL.Path[1:], "/")
-	switch len(parts) {
-	case 1: // Endpoint: /menu
-		switch r.Method {
-		case http.MethodPost: // POST /menu: Add a new menu item.
-			h.PostMenu(w, r)
-		case http.MethodGet: // GET /menu: Retrieve all menu items.
-			h.GetMenuItems(w, r)
-		default:
-			ErrorHandler.Error(w, "Method is not allowed", http.StatusMethodNotAllowed)
-		}
-	case 2: // Endpoint: /menu/{id}
-		switch r.Method {
-		case http.MethodPut: // PUT /menu/{id}: Update a menu item.
-			h.PutMenu(w, r)
-		case http.MethodGet: // GET /menu/{id}: Retrieve a specific menu item.
-			h.GetMenuItem(w, r)
-		case http.MethodDelete: // DELETE /menu/{id}: Delete a menu item.
-			h.DeleteMenu(w, r)
-		default:
-			ErrorHandler.Error(w, "Method is not allowed", http.StatusMethodNotAllowed)
-		}
-	default:
-		ErrorHandler.Error(w, "Something wrong with your request", http.StatusBadRequest)
-	}
 }
 
 func (h *MenuHandler) PostMenu(w http.ResponseWriter, r *http.Request) {
