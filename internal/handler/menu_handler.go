@@ -7,7 +7,6 @@ import (
 	"hot-coffee/models"
 	"log/slog"
 	"net/http"
-	"strings"
 )
 
 type MenuHandler struct {
@@ -17,34 +16,6 @@ type MenuHandler struct {
 
 func NewMenuHandler(menuService *service.MenuService, logger *slog.Logger) *MenuHandler {
 	return &MenuHandler{menuService: menuService, logger: logger}
-}
-
-func (h *MenuHandler) MenuHandler(w http.ResponseWriter, r *http.Request) {
-	parts := strings.Split(r.URL.Path[1:], "/")
-	switch len(parts) {
-	case 1: // Endpoint: /menu
-		switch r.Method {
-		case http.MethodPost: // POST /menu: Add a new menu item.
-			h.PostMenu(w, r)
-		case http.MethodGet: // GET /menu: Retrieve all menu items.
-			h.GetMenuItems(w, r)
-		default:
-			ErrorHandler.Error(w, "Method is not allowed", http.StatusMethodNotAllowed)
-		}
-	case 2: // Endpoint: /menu/{id}
-		switch r.Method {
-		case http.MethodPut: // PUT /menu/{id}: Update a menu item.
-			h.PutMenu(w, r)
-		case http.MethodGet: // GET /menu/{id}: Retrieve a specific menu item.
-			h.GetMenuItem(w, r)
-		case http.MethodDelete: // DELETE /menu/{id}: Delete a menu item.
-			h.DeleteMenu(w, r)
-		default:
-			ErrorHandler.Error(w, "Method is not allowed", http.StatusMethodNotAllowed)
-		}
-	default:
-		ErrorHandler.Error(w, "Something wrong with your request", http.StatusBadRequest)
-	}
 }
 
 func (h *MenuHandler) PostMenu(w http.ResponseWriter, r *http.Request) {
@@ -69,13 +40,47 @@ func (h *MenuHandler) PostMenu(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *MenuHandler) GetMenuItems(w http.ResponseWriter, r *http.Request) {
+	MenuItems, err := h.menuService.GetMenuItems()
+	if err != nil {
+		ErrorHandler.Error(w, "Could not read menu database", http.StatusInternalServerError)
+	}
+	jsonData, err := json.MarshalIndent(MenuItems, "", "    ")
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+	w.Write(jsonData)
 }
 
 func (h *MenuHandler) GetMenuItem(w http.ResponseWriter, r *http.Request) {
+	MenuItem, err := h.menuService.GetMenuItem(r.PathValue("id"))
+	if err != nil {
+		ErrorHandler.Error(w, "Could not read menu database", http.StatusInternalServerError)
+	}
+	jsonData, err := json.MarshalIndent(MenuItem, "", "    ")
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+	w.Write(jsonData)
+
+	h.logger.Info("Request handled successfully.", "method", r.Method, "url", r.URL)
 }
 
 func (h *MenuHandler) PutMenu(w http.ResponseWriter, r *http.Request) {
+	err := h.menuService.UpdateMenuItem(r)
+	if err != nil {
+		h.logger.Error("Could not update menu database", "error", err, "method", r.Method, "url", r.URL)
+		ErrorHandler.Error(w, "Could not update menu database", http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(201)
+	h.logger.Info("Request handled successfully.", "method", r.Method, "url", r.URL)
 }
 
 func (h *MenuHandler) DeleteMenu(w http.ResponseWriter, r *http.Request) {
+	err := h.menuService.DeleteMenuItem(r.PathValue("id"))
+	if err != nil {
+		h.logger.Error("Could not delete menu item", "error", err, "method", r.Method, "url", r.URL)
+		ErrorHandler.Error(w, "Could not delete menu item", http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(204)
+	h.logger.Info("Request handled successfully.", "method", r.Method, "url", r.URL)
 }

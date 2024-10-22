@@ -2,12 +2,11 @@ package utils
 
 import (
 	"fmt"
+	"hot-coffee/config"
 	"io"
 	"os"
 	"os/user"
 	"path/filepath"
-
-	"hot-coffee/config"
 )
 
 func DirectoryExists(path string) bool {

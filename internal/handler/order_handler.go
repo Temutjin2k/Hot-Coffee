@@ -125,5 +125,9 @@ func (h *OrderHandler) CloseOrder(w http.ResponseWriter, r *http.Request) {
 			ErrorHandler.Error(w, "Not enough ingridients to close the order", http.StatusInternalServerError)
 		}
 	}
-	h.orderService.CloseOrder(r.PathValue("id"))
+	err = h.orderService.CloseOrder(r.PathValue("id"))
+	if err != nil {
+		ErrorHandler.Error(w, "Something happened when closing order", http.StatusInternalServerError)
+		return
+	}
 }
