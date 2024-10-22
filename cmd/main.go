@@ -53,7 +53,6 @@ func main() {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/menu", menuHandler.MenuHandler)
 	mux.HandleFunc("/orders", orderHandler.OrderHandler)
-	mux.HandleFunc("/orders/{id}", orderHandler.OrderHandler)
 	mux.HandleFunc("/inventory", inventoryHandler.InventoryHandler)
 	mux.HandleFunc("/reports/total-sales", reportHandler.TotalSalesHandler)
 	mux.HandleFunc("/reports/popular-items", reportHandler.PopularItemsHandler)
