@@ -73,7 +73,6 @@ func (h *OrderHandler) GetOrders(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *OrderHandler) PutOrder(w http.ResponseWriter, r *http.Request) {
-	h.menuService.MenuCheckByID()
 	Requestcontent, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		ErrorHandler.Error(w, "Could not read request body", http.StatusBadRequest)

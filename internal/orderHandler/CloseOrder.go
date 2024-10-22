@@ -2,13 +2,11 @@ package orderHandler
 
 import (
 	"encoding/json"
-	"net/http"
-	"os"
-
 	"hot-coffee/config"
 	"hot-coffee/internal/ErrorHandler"
-	"hot-coffee/internal/service"
 	"hot-coffee/models"
+	"net/http"
+	"os"
 )
 
 func Closeorder(w http.ResponseWriter, OrderID string) {
@@ -40,7 +38,7 @@ func Closeorder(w http.ResponseWriter, OrderID string) {
 		}
 	}
 
-	service.SubtractIngridients(w, ClosingOrder)
+	// service.SubtractIngridients(w, ClosingOrder)
 	jsondata, err := json.MarshalIndent(Orders, "", "    ")
 	if err != nil {
 		ErrorHandler.Error(w, "Could not upload order", http.StatusInternalServerError)

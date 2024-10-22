@@ -2,10 +2,9 @@ package dal
 
 import (
 	"encoding/json"
-	"os"
-
 	"hot-coffee/config"
 	"hot-coffee/models"
+	"os"
 )
 
 // InventoryRepository implements InventoryRepository using JSON files
