@@ -22,30 +22,30 @@ func NewOrderHandler(orderService *service.OrderService) *OrderHandler {
 func (h *OrderHandler) OrderHandler(w http.ResponseWriter, r *http.Request) {
 	parts := strings.Split(r.URL.Path[1:], "/")
 	switch len(parts) {
-	case 1:
+	case 1: // Endpoint: /orders
 		switch r.Method {
 		case http.MethodPost:
-			h.PostOrder(w, r)
+			h.PostOrder(w, r) // POST /orders: Create a new order.
 		case http.MethodGet:
-			h.GetOrders(w, r)
+			h.GetOrders(w, r) // GET /orders: Retrieve all orders.
 		default:
 			ErrorHandler.Error(w, "Method is not allowed", http.StatusMethodNotAllowed)
 		}
-	case 2:
+	case 2: // Endpoint: /orders/{id}
 		switch r.Method {
 		case http.MethodPut:
-			h.PutOrder(w, r)
+			h.PutOrder(w, r) // PUT /orders/{id}: Update an existing order.
 		case http.MethodGet:
-			h.GetOrder(w, r)
+			h.GetOrder(w, r) // GET /orders/{id}: Retrieve a specific order by ID.
 		case http.MethodDelete:
-			h.DeleteOrder(w, r)
+			h.DeleteOrder(w, r) // DELETE /orders/{id}: Delete an order.
 		default:
 			ErrorHandler.Error(w, "Method is not allowed", http.StatusMethodNotAllowed)
 		}
-	case 3:
+	case 3: // Endpoint: /orders/{id}/close
 		if r.Method == http.MethodPost {
 			if parts[2] == "close" {
-				h.CloseOrder(w, r)
+				h.CloseOrder(w, r) // POST /orders/{id}/close: Close an order.
 			} else {
 				ErrorHandler.Error(w, "Adress is not allowed", http.StatusForbidden)
 			}
