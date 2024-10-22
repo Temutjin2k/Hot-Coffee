@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"encoding/json"
 	"net/http"
 
 	"hot-coffee/internal/service"
@@ -20,6 +21,14 @@ func (h *AggregationHandler) TotalSalesHandler(w http.ResponseWriter, r *http.Re
 		// TODO
 		return
 	}
+	totalSales, err := h.orderService.GetTotalSales()
+	if err != nil {
+		// TODO
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(totalSales)
 }
 
 // Returns Each item as key and quatity as value

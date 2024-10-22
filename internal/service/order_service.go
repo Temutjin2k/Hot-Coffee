@@ -48,8 +48,8 @@ func (s *OrderService) DeleteOrder(orderID string) error {
 		return err
 	}
 
-	for _, existingOrder := range existingOrders {
-		if existingOrder.ID == orderID {
+	for _, order := range existingOrders {
+		if order.ID == orderID {
 			return s.orderRepo.Delete(orderID)
 		}
 	}
@@ -64,11 +64,28 @@ func (s *OrderService) UpdateOrder(updatedOrder models.Order) error {
 		return err
 	}
 
-	for _, existingOrder := range existingOrders {
-		if existingOrder.ID == updatedOrder.ID {
+	for _, order := range existingOrders {
+		if order.ID == updatedOrder.ID {
 			return s.orderRepo.Update(updatedOrder)
 		}
 	}
 
 	return errors.New("order not found")
+}
+
+func (s *OrderService) GetTotalSales() (models.TotalSales, error) {
+	existingOrders, err := s.orderRepo.GetAll()
+	if err != nil {
+		return models.TotalSales{}, err
+	}
+
+	// Counting sales amount
+	totalSales := models.TotalSales{}
+
+	for _, order := range existingOrders {
+		for _, item := range order.Items {
+			totalSales.TotalSales += item.Quantity
+		}
+	}
+	return totalSales, nil
 }

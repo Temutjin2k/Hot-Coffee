@@ -71,7 +71,8 @@ func (h *OrderHandler) PostOrder(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(newOrder)
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(newOrder) // TODO error handling
 }
 
 func (h *OrderHandler) GetOrder(w http.ResponseWriter, r *http.Request) {
