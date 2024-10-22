@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"log/slog"
 	"net/http"
 	"strings"
 
@@ -10,10 +11,11 @@ import (
 
 type InventoryHandler struct {
 	inventoryService *service.InventoryService
+	logger           *slog.Logger
 }
 
-func NewInventoryHandler(inventoryService *service.InventoryService) *InventoryHandler {
-	return &InventoryHandler{inventoryService: inventoryService}
+func NewInventoryHandler(inventoryService *service.InventoryService, logger *slog.Logger) *InventoryHandler {
+	return &InventoryHandler{inventoryService: inventoryService, logger: logger}
 }
 
 func (h *InventoryHandler) InventoryHandler(w http.ResponseWriter, r *http.Request) {

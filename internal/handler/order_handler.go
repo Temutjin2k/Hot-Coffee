@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"log/slog"
 	"net/http"
 	"strings"
 
@@ -12,11 +13,12 @@ import (
 
 type OrderHandler struct {
 	orderService *service.OrderService
+	logger       *slog.Logger
 }
 
 // NewOrderHandler creates a new OrderHandler
-func NewOrderHandler(orderService *service.OrderService) *OrderHandler {
-	return &OrderHandler{orderService: orderService}
+func NewOrderHandler(orderService *service.OrderService, logger *slog.Logger) *OrderHandler {
+	return &OrderHandler{orderService: orderService, logger: logger}
 }
 
 func (h *OrderHandler) OrderHandler(w http.ResponseWriter, r *http.Request) {

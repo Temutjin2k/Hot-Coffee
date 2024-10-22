@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"log/slog"
 	"net/http"
 	"os"
 	"os/user"
@@ -33,6 +34,15 @@ func main() {
 		utils.CreateDir(dir)
 	}
 
+	// logger init
+	logFile, err := os.OpenFile(path+"/app.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0o666)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "Failed to open log file:", err)
+	}
+	defer logFile.Close()
+
+	logger := slog.New(slog.NewTextHandler(logFile, nil))
+
 	// Initialize repositories (Data Access Layer)
 	menuRepo := dal.NewMenuRepository()
 	inventoryRepo := dal.NewInventoryRepository()
@@ -44,10 +54,10 @@ func main() {
 	inventoryService := service.NewInventoryService(*inventoryRepo) // TODO
 
 	// Initialize handlers (Presentation Layer)
-	menuHandler := handler.NewMenuHandler(menuService)
-	orderHandler := handler.NewOrderHandler(orderService)
-	inventoryHandler := handler.NewInventoryHandler(inventoryService) // TODO
-	reportHandler := handler.NewAggregationHandler(orderService)
+	menuHandler := handler.NewMenuHandler(menuService, logger)
+	orderHandler := handler.NewOrderHandler(orderService, logger)
+	inventoryHandler := handler.NewInventoryHandler(inventoryService, logger) // TODO
+	reportHandler := handler.NewAggregationHandler(orderService, logger)
 
 	// Setup HTTP routes
 	mux := http.NewServeMux()
@@ -60,5 +70,6 @@ func main() {
 	address := "http://localhost:" + port + "/"
 	fmt.Println("Server launched on address:", address)
 
+	logger.Info("Application started", "Address", address, "Data directory", path)
 	log.Fatal(http.ListenAndServe(":"+port, mux))
 }

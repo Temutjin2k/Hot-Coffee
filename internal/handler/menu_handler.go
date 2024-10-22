@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"log/slog"
 	"net/http"
 	"strings"
 
@@ -12,10 +13,11 @@ import (
 
 type MenuHandler struct {
 	menuService *service.MenuService
+	logger      *slog.Logger
 }
 
-func NewMenuHandler(menuService *service.MenuService) *MenuHandler {
-	return &MenuHandler{menuService: menuService}
+func NewMenuHandler(menuService *service.MenuService, logger *slog.Logger) *MenuHandler {
+	return &MenuHandler{menuService: menuService, logger: logger}
 }
 
 func (h *MenuHandler) MenuHandler(w http.ResponseWriter, r *http.Request) {
