@@ -2,12 +2,11 @@ package handler
 
 import (
 	"encoding/json"
-	"log/slog"
-	"net/http"
-
 	"hot-coffee/internal/ErrorHandler"
 	"hot-coffee/internal/service"
 	"hot-coffee/models"
+	"log/slog"
+	"net/http"
 )
 
 type MenuHandler struct {
@@ -46,6 +45,9 @@ func (h *MenuHandler) GetMenu(w http.ResponseWriter, r *http.Request) {
 		ErrorHandler.Error(w, "Could not read menu database", http.StatusInternalServerError)
 	}
 	jsonData, err := json.MarshalIndent(MenuItems, "", "    ")
+	if err != nil {
+		ErrorHandler.Error(w, "Could not read menu database", http.StatusInternalServerError)
+	}
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(200)
 	w.Write(jsonData)
@@ -57,6 +59,9 @@ func (h *MenuHandler) GetMenuItem(w http.ResponseWriter, r *http.Request) {
 		ErrorHandler.Error(w, "Could not read menu database", http.StatusInternalServerError)
 	}
 	jsonData, err := json.MarshalIndent(MenuItem, "", "    ")
+	if err != nil {
+		ErrorHandler.Error(w, "Could not read menu database", http.StatusInternalServerError)
+	}
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(200)
 	w.Write(jsonData)
