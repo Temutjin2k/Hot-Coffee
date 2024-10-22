@@ -20,7 +20,7 @@ func NewInventoryService(inventoryRepo dal.InventoryRepository) *InventoryServic
 
 func (s *InventoryService) AddInventoryItem(item models.InventoryItem) error {
 	if s.inventoryRepo.Exists(item.IngredientID) {
-		return errors.New("inventory item, already exists")
+		return errors.New("inventory item already exists")
 	}
 
 	ingridientItems, err := s.inventoryRepo.GetAll()
@@ -31,6 +31,78 @@ func (s *InventoryService) AddInventoryItem(item models.InventoryItem) error {
 	ingridientItems = append(ingridientItems, item)
 
 	err = s.inventoryRepo.SaveAll(ingridientItems)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *InventoryService) GetAllInventoryItems() ([]models.InventoryItem, error) {
+	items, err := s.inventoryRepo.GetAll()
+	if err != nil {
+		return []models.InventoryItem{}, nil
+	}
+	return items, nil
+}
+
+func (s *InventoryService) GetItem(id string) (models.InventoryItem, error) {
+	items, err := s.inventoryRepo.GetAll()
+	if err != nil {
+		return models.InventoryItem{}, err
+	}
+
+	for _, item := range items {
+		if item.IngredientID == id {
+			return item, nil
+		}
+	}
+	return models.InventoryItem{}, errors.New("inventory item does not exists")
+}
+
+func (s *InventoryService) UpdateItem(id string, newItem models.InventoryItem) error {
+	if !s.inventoryRepo.Exists(id) {
+		return errors.New("inventory item does not exists")
+	}
+
+	items, err := s.inventoryRepo.GetAll()
+	if err != nil {
+		return err
+	}
+
+	for i, item := range items {
+		if item.IngredientID == id {
+			items[i] = newItem
+			break
+		}
+	}
+
+	err = s.inventoryRepo.SaveAll(items)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *InventoryService) DeleteItem(id string) error {
+	if !s.inventoryRepo.Exists(id) {
+		return errors.New("inventory item does not exists")
+	}
+
+	items, err := s.inventoryRepo.GetAll()
+	if err != nil {
+		return err
+	}
+
+	newItems := []models.InventoryItem{}
+
+	for _, item := range items {
+		if item.IngredientID != id {
+			newItems = append(newItems, item)
+		}
+	}
+
+	err = s.inventoryRepo.SaveAll(newItems)
 	if err != nil {
 		return err
 	}
