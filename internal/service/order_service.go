@@ -151,7 +151,7 @@ func (s *OrderService) GetPopularItems(popularItemsNum int) (models.PopularItems
 	return popularItems, nil
 }
 
-func (s *OrderService) SaveAllOrders(OrderID string) error {
+func (s *OrderService) DeleteOrderByID(OrderID string) error {
 	Orders, err := s.GetAllOrders()
 	if err != nil {
 		return err

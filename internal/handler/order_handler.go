@@ -107,7 +107,7 @@ func (h *OrderHandler) PutOrder(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *OrderHandler) DeleteOrder(w http.ResponseWriter, r *http.Request) {
-	err := h.orderService.SaveAllOrders(r.PathValue("id"))
+	err := h.orderService.DeleteOrderByID(r.PathValue("id"))
 	if err != nil {
 		ErrorHandler.Error(w, "Error updating orders database", http.StatusBadRequest)
 	}
