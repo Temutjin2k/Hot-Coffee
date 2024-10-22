@@ -60,6 +60,7 @@ func (s *InventoryService) GetItem(id string) (models.InventoryItem, error) {
 	return models.InventoryItem{}, errors.New("inventory item does not exists")
 }
 
+// Updates Item by id replacing with
 func (s *InventoryService) UpdateItem(id string, newItem models.InventoryItem) error {
 	if !s.inventoryRepo.Exists(id) {
 		return errors.New("inventory item does not exists")
@@ -84,6 +85,7 @@ func (s *InventoryService) UpdateItem(id string, newItem models.InventoryItem) e
 	return nil
 }
 
+// Deletes Item by id
 func (s *InventoryService) DeleteItem(id string) error {
 	if !s.inventoryRepo.Exists(id) {
 		return errors.New("inventory item does not exists")
