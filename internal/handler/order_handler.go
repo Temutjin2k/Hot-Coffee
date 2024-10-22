@@ -2,12 +2,13 @@ package handler
 
 import (
 	"encoding/json"
-	"hot-coffee/internal/ErrorHandler"
-	"hot-coffee/internal/service"
-	"hot-coffee/models"
 	"io/ioutil"
 	"log/slog"
 	"net/http"
+
+	"hot-coffee/internal/ErrorHandler"
+	"hot-coffee/internal/service"
+	"hot-coffee/models"
 )
 
 type OrderHandler struct {

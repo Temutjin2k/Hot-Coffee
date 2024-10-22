@@ -1,12 +1,13 @@
 package handler
 
 import (
+	"encoding/json"
 	"log/slog"
 	"net/http"
-	"strings"
 
 	"hot-coffee/internal/ErrorHandler"
 	"hot-coffee/internal/service"
+	"hot-coffee/models"
 )
 
 type InventoryHandler struct {
@@ -18,43 +19,96 @@ func NewInventoryHandler(inventoryService *service.InventoryService, logger *slo
 	return &InventoryHandler{inventoryService: inventoryService, logger: logger}
 }
 
-func (h *InventoryHandler) InventoryHandler(w http.ResponseWriter, r *http.Request) {
-	path := strings.Split(r.URL.Path[1:], "/")
-
-	switch len(path) {
-	case 1: // Endpoint: /inventory
-		switch r.Method {
-		case http.MethodPost: // POST /inventory: Add a new inventory item.
-			h.PostInventory(w, r)
-		case http.MethodGet: // GET /inventory: Retrieve all inventory items.
-			h.GetInventory(w, r)
-		}
-	case 2: // Endpoint: /inventory/{id}
-		// Maybe Validation of ID
-		switch r.Method {
-		case http.MethodGet: // GET /inventory/{id}: Retrieve a specific inventory item.
-			h.GetInventoryItem(w, r)
-		case http.MethodPut: // PUT /inventory/{id}: Update an inventory item.
-			h.PutInventoryItem(w, r)
-		case http.MethodDelete: // DELETE /inventory/{id}: Delete an inventory item.
-			h.DeleteInventoryItem(w, r)
-		}
-	default:
-		ErrorHandler.Error(w, "Not Found", http.StatusNotFound)
-	}
-}
-
 func (h *InventoryHandler) PostInventory(w http.ResponseWriter, r *http.Request) {
+	var newItem models.InventoryItem
+	err := json.NewDecoder(r.Body).Decode(&newItem)
+	if err != nil {
+		h.logger.Error("Could not decode json data", "error", err, "method", r.Method, "url", r.URL)
+		ErrorHandler.Error(w, "Could not decode request json data", http.StatusInternalServerError)
+		return
+	}
+
+	err = h.inventoryService.AddInventoryItem(newItem)
+	if err != nil {
+		h.logger.Error("Could not add new inventory item", "error", err, "method", r.Method, "url", r.URL)
+		ErrorHandler.Error(w, "Could not add new inventory item", http.StatusInternalServerError)
+		return
+	}
+
+	h.logger.Info("Request handled successfully.", "method", r.Method, "url", r.URL)
 }
 
 func (h *InventoryHandler) GetInventory(w http.ResponseWriter, r *http.Request) {
+	inventoryItems, err := h.inventoryService.GetAllInventoryItems()
+	if err != nil {
+		h.logger.Error("Could not get inventory items", "error", err, "method", r.Method, "url", r.URL)
+		ErrorHandler.Error(w, "Could not get inventory items", http.StatusInternalServerError)
+		return
+	}
+
+	jsonData, err := json.Marshal(inventoryItems)
+	if err != nil {
+		h.logger.Error("Could not encode json data", "error", err, "method", r.Method, "url", r.URL)
+		ErrorHandler.Error(w, "Could not encode request json data", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(jsonData)
+
+	h.logger.Info("Request handled successfully.", "method", r.Method, "url", r.URL)
 }
 
 func (h *InventoryHandler) GetInventoryItem(w http.ResponseWriter, r *http.Request) {
+	id := r.PathValue("id")
+
+	inventoryItem, err := h.inventoryService.GetItem(id)
+	if err != nil {
+		h.logger.Error("Could not get inventory item", "error", err, "method", r.Method, "url", r.URL)
+		ErrorHandler.Error(w, "Could not get inventory item", http.StatusInternalServerError)
+		return
+	}
+
+	jsonData, err := json.Marshal(inventoryItem)
+	if err != nil {
+		h.logger.Error("Could not encode json data", "error", err, "method", r.Method, "url", r.URL)
+		ErrorHandler.Error(w, "Could not encode json data", http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(jsonData)
+
+	h.logger.Info("Request handled successfully.", "method", r.Method, "url", r.URL)
 }
 
 func (h *InventoryHandler) PutInventoryItem(w http.ResponseWriter, r *http.Request) {
+	var newItem models.InventoryItem
+	err := json.NewDecoder(r.Body).Decode(&newItem)
+	if err != nil {
+		h.logger.Error("Could not decode json data", "error", err, "method", r.Method, "url", r.URL)
+		ErrorHandler.Error(w, "Could not decode request json data", http.StatusBadRequest)
+		return
+	}
+
+	err = h.inventoryService.UpdateItem(r.PathValue("id"), newItem)
+	if err != nil {
+		h.logger.Error("Error updating inventory item", "error", err, "method", r.Method, "url", r.URL)
+		ErrorHandler.Error(w, "Error updating inventory item", http.StatusInternalServerError)
+		return
+	}
+
+	h.logger.Info("Request handled successfully.", "method", r.Method, "url", r.URL)
 }
 
 func (h *InventoryHandler) DeleteInventoryItem(w http.ResponseWriter, r *http.Request) {
+	id := r.PathValue("id")
+	err := h.inventoryService.DeleteItem(id)
+	if err != nil {
+		h.logger.Error("Could not delete inventory item", "error", err, "method", r.Method, "url", r.URL)
+		ErrorHandler.Error(w, "Could not delete inventory item", http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+	h.logger.Info("Request handled successfully.", "method", r.Method, "url", r.URL)
 }
