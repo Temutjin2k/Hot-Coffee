@@ -37,4 +37,12 @@ func (h *AggregationHandler) PopularItemsHandler(w http.ResponseWriter, r *http.
 		// TODO
 		return
 	}
+	popularItems, err := h.orderService.GetPopularItems(3)
+	if err != nil {
+		// TODO
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(popularItems)
 }

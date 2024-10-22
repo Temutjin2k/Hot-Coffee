@@ -2,6 +2,7 @@ package service
 
 import (
 	"errors"
+	"sort"
 
 	"hot-coffee/internal/dal"
 	"hot-coffee/models"
@@ -88,4 +89,37 @@ func (s *OrderService) GetTotalSales() (models.TotalSales, error) {
 		}
 	}
 	return totalSales, nil
+}
+
+func (s *OrderService) GetPopularItems(popularItemsNum int) (models.PopularItems, error) {
+	existingOrders, err := s.orderRepo.GetAll()
+	if err != nil {
+		return models.PopularItems{}, err
+	}
+
+	// Should return sorted decreasing array
+	itemMap := make(map[string]int)
+	for _, order := range existingOrders {
+		for _, item := range order.Items {
+			itemMap[item.ProductID] += item.Quantity
+		}
+	}
+
+	sortedItems := make([]models.OrderItem, 0, len(itemMap))
+	for productID, quantity := range itemMap {
+		sortedItems = append(sortedItems, models.OrderItem{ProductID: productID, Quantity: quantity})
+	}
+
+	// Sorting in decresing order
+	sort.Slice(sortedItems, func(i, j int) bool {
+		return sortedItems[i].Quantity > sortedItems[j].Quantity
+	})
+
+	// To prevent from out of range
+	if popularItemsNum > len(sortedItems) {
+		popularItemsNum = len(sortedItems)
+	}
+
+	popularItems := models.PopularItems{Items: sortedItems[:popularItemsNum]} // potential out of range
+	return popularItems, nil
 }

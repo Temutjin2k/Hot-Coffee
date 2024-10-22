@@ -5,5 +5,5 @@ type TotalSales struct {
 }
 
 type PopularItems struct {
-	Items OrderItem `json:"items"`
+	Items []OrderItem `json:"popular_items"`
 }
