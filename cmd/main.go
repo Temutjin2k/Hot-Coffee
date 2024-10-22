@@ -2,18 +2,17 @@ package main
 
 import (
 	"fmt"
+	"hot-coffee/config"
+	"hot-coffee/internal/dal"
+	"hot-coffee/internal/handler"
+	"hot-coffee/internal/service"
+	"hot-coffee/utils"
 	"log"
 	"log/slog"
 	"net/http"
 	"os"
 	"os/user"
 	"path/filepath"
-
-	"hot-coffee/config"
-	"hot-coffee/internal/dal"
-	"hot-coffee/internal/handler"
-	"hot-coffee/internal/service"
-	"hot-coffee/utils"
 )
 
 func main() {
@@ -49,7 +48,7 @@ func main() {
 	inventoryRepo := dal.NewInventoryRepository()
 
 	// Initialize services (Business Logic Layer)
-	orderService := service.NewOrderService(*orderRepo)
+	orderService := service.NewOrderService(*orderRepo, *menuRepo)
 	menuService := service.NewMenuService(*menuRepo, *inventoryRepo)
 	inventoryService := service.NewInventoryService(*inventoryRepo) // TODO
 

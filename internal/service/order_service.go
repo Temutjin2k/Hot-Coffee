@@ -2,18 +2,21 @@ package service
 
 import (
 	"errors"
-	"sort"
-
 	"hot-coffee/internal/dal"
 	"hot-coffee/models"
+	"sort"
 )
 
 type OrderService struct {
 	orderRepo dal.OrderRepository
+	menuRepo  dal.MenuRepository
 }
 
-func NewOrderService(orderRepo dal.OrderRepository) *OrderService {
-	return &OrderService{orderRepo: orderRepo}
+func NewOrderService(orderRepo dal.OrderRepository, menuRepo dal.MenuRepository) *OrderService {
+	return &OrderService{
+		orderRepo: orderRepo,
+		menuRepo:  menuRepo,
+	}
 }
 
 // AddOrder adds a new order to the repository
