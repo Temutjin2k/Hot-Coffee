@@ -69,14 +69,14 @@ func (h *MenuHandler) PostMenu(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (h *MenuHandler) GetMenuItems(w http.ResponseWriter, r *http.Request) {
+func (h *MenuHandler) GetMenu(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *MenuHandler) GetMenuItem(w http.ResponseWriter, r *http.Request) {
 }
 
-func (h *MenuHandler) PutMenu(w http.ResponseWriter, r *http.Request) {
+func (h *MenuHandler) PutMenuItem(w http.ResponseWriter, r *http.Request) {
 }
 
-func (h *MenuHandler) DeleteMenu(w http.ResponseWriter, r *http.Request) {
+func (h *MenuHandler) DeleteMenuItem(w http.ResponseWriter, r *http.Request) {
 }
