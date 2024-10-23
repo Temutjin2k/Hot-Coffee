@@ -2,7 +2,7 @@
     {
         "ingredient_id": "espresso_shot",
         "name": "Espresso Shot",
-        "quantity": 493,
+        "quantity": 453,
         "unit": "shots"
     },
     {
@@ -14,7 +14,7 @@
     {
         "ingredient_id": "flour",
         "name": "Flour",
-        "quantity": 10000,
+        "quantity": 6000,
         "unit": "g"
     },
     {

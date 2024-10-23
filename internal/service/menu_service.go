@@ -89,16 +89,16 @@ func (s *MenuService) MenuCheckByID(ID string) error {
 	menuItems, _ := s.menuRepo.GetAll()
 	for _, item := range menuItems {
 		if item.ID == ID {
-			return errors.New("The requested menu item to update does not exist in menu") // Item exists in the menu
+			return nil
 		}
 	}
-	return nil // Item does not exist
+	return errors.New("The requested menu item to update does not exist in menu") // Item exists in the menu // Item does not exist
 }
 
 func (s *MenuService) IngredientsCheck(menuItem models.MenuItem, quantity int) bool {
 	menuItems, _ := s.menuRepo.GetAll()
 	ingredientsNeeded := make(map[string]float64)
-
+	flag := false
 	for _, item := range menuItems {
 		if item.ID == menuItem.ID {
 			for _, ingr := range item.Ingredients {
@@ -111,13 +111,14 @@ func (s *MenuService) IngredientsCheck(menuItem models.MenuItem, quantity int) b
 
 	for _, inventoryItem := range inventoryItems {
 		if value, exists := ingredientsNeeded[inventoryItem.IngredientID]; exists {
+			flag = true
 			if value > inventoryItem.Quantity {
 				return false // Not enough ingredients
 			}
 		}
 	}
 
-	return true // Enough ingredients available
+	return flag // Enough ingredients available
 }
 
 func (s *MenuService) IngredientsCheckByID(menuItemID string, quantity int) bool {

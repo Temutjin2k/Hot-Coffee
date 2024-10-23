@@ -46,21 +46,5 @@
                 "quantity": 1
             }
         ]
-    },
-    {
-        "product_id": "manty",
-        "name": "Manty",
-        "description": "Tasty meat in dough",
-        "price": 3.5,
-        "ingredients": [
-            {
-                "ingredient_id": "flour",
-                "quantity": 100
-            },
-            {
-                "ingredient_id": "meat",
-                "quantity": 200
-            }
-        ]
     }
 ]
