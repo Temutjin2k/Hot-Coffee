@@ -2,17 +2,18 @@ package main
 
 import (
 	"fmt"
-	"hot-coffee/config"
-	"hot-coffee/internal/dal"
-	"hot-coffee/internal/handler"
-	"hot-coffee/internal/service"
-	"hot-coffee/utils"
 	"log"
 	"log/slog"
 	"net/http"
 	"os"
 	"os/user"
 	"path/filepath"
+
+	"hot-coffee/config"
+	"hot-coffee/internal/dal"
+	"hot-coffee/internal/handler"
+	"hot-coffee/internal/service"
+	"hot-coffee/utils"
 )
 
 func main() {
@@ -62,8 +63,8 @@ func main() {
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("POST /orders", orderHandler.PostOrder)
-	mux.HandleFunc("GET /orders", orderHandler.GetOrder)
-	mux.HandleFunc("GET /orders/{id}", orderHandler.GetOrders)
+	mux.HandleFunc("GET /orders", orderHandler.GetOrders)
+	mux.HandleFunc("GET /orders/{id}", orderHandler.GetOrder)
 	mux.HandleFunc("PUT /orders/{id}", orderHandler.PutOrder)
 	mux.HandleFunc("DELETE /orders/{id}", orderHandler.DeleteOrder)
 	mux.HandleFunc("POST /orders/{id}/close", orderHandler.CloseOrder)
