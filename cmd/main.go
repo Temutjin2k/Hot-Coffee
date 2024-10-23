@@ -2,18 +2,17 @@ package main
 
 import (
 	"fmt"
+	"hot-coffee/config"
+	"hot-coffee/internal/dal"
+	"hot-coffee/internal/handler"
+	"hot-coffee/internal/service"
+	"hot-coffee/utils"
 	"log"
 	"log/slog"
 	"net/http"
 	"os"
 	"os/user"
 	"path/filepath"
-
-	"hot-coffee/config"
-	"hot-coffee/internal/dal"
-	"hot-coffee/internal/handler"
-	"hot-coffee/internal/service"
-	"hot-coffee/utils"
 )
 
 func main() {

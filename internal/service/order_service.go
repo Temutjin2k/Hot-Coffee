@@ -5,6 +5,9 @@ import (
 	"hot-coffee/internal/dal"
 	"hot-coffee/models"
 	"sort"
+	"strconv"
+	"strings"
+	"time"
 )
 
 type OrderService struct {
@@ -21,21 +24,27 @@ func NewOrderService(orderRepo dal.OrderRepository, menuRepo dal.MenuRepository)
 
 // AddOrder adds a new order to the repository
 func (s *OrderService) AddOrder(order models.Order) error {
-	if order.ID == "" {
-		return errors.New("order ID cannot be empty")
+	if order.Items == nil || strings.TrimSpace(order.CustomerName) == "" {
+		return errors.New("Womething wrong with your requested order")
+	}
+	for _, order := range order.Items {
+		if order.Quantity < 1 {
+			return errors.New("Womething wrong with your requested order")
+		}
 	}
 
-	existingOrders, err := s.orderRepo.GetAll()
+	OrderID, err := s.orderRepo.GetID()
 	if err != nil {
 		return err
 	}
-
-	// Check for duplicate order ID
-	for _, existingOrder := range existingOrders {
-		if existingOrder.ID == order.ID {
-			return errors.New("order with this ID already exists")
-		}
+	order.ID = strconv.Itoa(OrderID)
+	Location, err := time.LoadLocation("Asia/Aqtau")
+	if err != nil {
+		return err
 	}
+	timenow := time.Now().In(Location).Format(time.RFC3339)
+	order.CreatedAt = timenow
+	order.Status = "open"
 
 	return s.orderRepo.Add(order)
 }
@@ -82,6 +91,14 @@ func (s *OrderService) DeleteOrder(orderID string) error {
 
 // UpdateOrder updates an existing order
 func (s *OrderService) UpdateOrder(updatedOrder models.Order, OrderID string) error {
+	if updatedOrder.Items == nil || strings.TrimSpace(updatedOrder.CustomerName) == "" {
+		return errors.New("Womething wrong with your updated order")
+	}
+	for _, order := range updatedOrder.Items {
+		if order.Quantity < 1 {
+			return errors.New("Womething wrong with your updated order")
+		}
+	}
 	existingOrders, err := s.orderRepo.GetAll()
 	if err != nil {
 		return err
@@ -152,6 +169,10 @@ func (s *OrderService) GetPopularItems(popularItemsNum int) (models.PopularItems
 }
 
 func (s *OrderService) DeleteOrderByID(OrderID string) error {
+	// if !s.orderRepo.Exists(id) {
+	// 	return errors.New("inventory item does not exists")
+	// }
+
 	Orders, err := s.GetAllOrders()
 	if err != nil {
 		return err
@@ -184,7 +205,7 @@ func (s *OrderService) CloseOrder(OrderID string) error {
 			ClosingOrder.CustomerName = order.CustomerName
 			ClosingOrder.ID = OrderID
 			ClosingOrder.Items = order.Items
-			ClosingOrder.Status = "Closed"
+			ClosingOrder.Status = "closed"
 		}
 	}
 	for i, order := range Orders {
@@ -193,7 +214,7 @@ func (s *OrderService) CloseOrder(OrderID string) error {
 			Orders[i].CustomerName = ClosingOrder.CustomerName
 			Orders[i].ID = OrderID
 			Orders[i].Items = ClosingOrder.Items
-			Orders[i].Status = "Closed"
+			Orders[i].Status = "closed"
 		}
 	}
 	s.orderRepo.SaveAll(Orders)

@@ -4,7 +4,10 @@ import (
 	"encoding/json"
 	"hot-coffee/config"
 	"hot-coffee/models"
+	"io/ioutil"
 	"os"
+	"os/user"
+	"path/filepath"
 )
 
 // OrderRepository implements OrderRepository using JSON files
@@ -52,4 +55,32 @@ func (repo *OrderRepository) SaveAll(Orders []models.Order) error {
 		return err
 	}
 	return os.WriteFile(config.BaseDir+"/orders.json", jsonData, 0o644)
+}
+
+func (repo *OrderRepository) GetID() (int, error) {
+	user, err := user.Current()
+	if err != nil {
+		return -1, err
+	}
+	Path := filepath.Join(user.HomeDir, "hot-coffee", config.BaseDir, "config.json")
+
+	ConfigContent, err := ioutil.ReadFile(Path)
+	if err != nil {
+		return -1, err
+	}
+
+	var ID models.OrderID
+	err = json.Unmarshal(ConfigContent, &ID)
+	if err != nil {
+		return -1, err
+	}
+
+	i := ID.ID
+	ID.ID++
+	NewContent, err := json.MarshalIndent(ID, "", "    ")
+	if err != nil {
+		// TODO
+	}
+	os.WriteFile(config.BaseDir+"/config.json", NewContent, os.ModePerm)
+	return i, nil
 }

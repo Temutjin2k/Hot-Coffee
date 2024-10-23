@@ -8,6 +8,7 @@ import (
 	"hot-coffee/models"
 	"io/ioutil"
 	"net/http"
+	"strings"
 )
 
 type MenuService struct {
@@ -83,15 +84,15 @@ func (s *MenuService) MenuCheck(menuItem models.MenuItem) bool {
 	return false // Item does not exist
 }
 
-func (s *MenuService) MenuCheckByID(ID string) bool {
+func (s *MenuService) MenuCheckByID(ID string) error {
 	// Use the ProductID of the single menu item to check against existing menu items
 	menuItems, _ := s.menuRepo.GetAll()
 	for _, item := range menuItems {
 		if item.ID == ID {
-			return true // Item exists in the menu
+			return errors.New("The requested menu item to update does not exist in menu") // Item exists in the menu
 		}
 	}
-	return false // Item does not exist
+	return nil // Item does not exist
 }
 
 func (s *MenuService) IngredientsCheck(menuItem models.MenuItem, quantity int) bool {
@@ -220,4 +221,28 @@ func (s *MenuService) GetMenuItems() ([]models.MenuItem, error) {
 		return []models.MenuItem{}, err
 	}
 	return MenuItems, err
+}
+
+func (s *MenuService) CheckNewMenu(MenuItem models.MenuItem) error {
+	if strings.TrimSpace(MenuItem.ID) == "" {
+		return errors.New("New menu item's ID is empty")
+	}
+	if strings.TrimSpace(MenuItem.Name) == "" {
+		return errors.New("New menu item's Name is empty")
+	}
+	if strings.TrimSpace(MenuItem.Description) == "" {
+		return errors.New("New menu item's Description is empty")
+	}
+	if MenuItem.Price < 0 {
+		return errors.New("New menu item's Price is awkward")
+	}
+	for _, ingredient := range MenuItem.Ingredients {
+		if strings.TrimSpace(ingredient.IngredientID) == "" {
+			return errors.New("New menu item's ingredient is empty")
+		}
+		if ingredient.Quantity < 0 {
+			return errors.New("New menu item's quantity is awkward")
+		}
+	}
+	return nil
 }
