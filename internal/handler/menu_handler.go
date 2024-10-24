@@ -35,16 +35,17 @@ func (h *MenuHandler) PostMenu(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Use the service to check if the item already exists
-	if h.menuService.MenuCheck(newItem) {
+	if err = h.menuService.MenuCheckByID(newItem.ID); err != nil {
 		h.logger.Error("The requested menu item already exists in current menu", "error", err, "method", r.Method, "url", r.URL)
 		ErrorHandler.Error(w, "The requested menu item already exists in current menu", http.StatusBadRequest)
 		return
 	}
-	if !h.menuService.IngredientsCheck(newItem, 1) {
-		h.logger.Error("No ingridients for new menu item or not enough ingridients even for 1 item", "method", r.Method, "url", r.URL)
-		ErrorHandler.Error(w, "No ingridients for new menu item or not enough ingridients even for 1 item", http.StatusBadRequest)
+	if err = h.menuService.IngredientsCheckByID(newItem.ID, 1); err != nil {
+		h.logger.Error(err.Error(), "method", r.Method, "url", r.URL)
+		ErrorHandler.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
+
 	// Add the new menu item using the service
 	if err := h.menuService.AddMenuItem(newItem); err != nil {
 		h.logger.Error(err.Error(), "error", err, "method", r.Method, "url", r.URL)
@@ -116,9 +117,9 @@ func (h *MenuHandler) PutMenuItem(w http.ResponseWriter, r *http.Request) {
 		ErrorHandler.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	if !h.menuService.IngredientsCheck(RequestedMenuItem, 1) {
-		h.logger.Error("No ingridients for new menu item or not enough ingridients even for 1 item", "method", r.Method, "url", r.URL)
-		ErrorHandler.Error(w, "No ingridients for new menu item or not enough ingridients even for 1 item", http.StatusBadRequest)
+	if err = h.menuService.IngredientsCheckByID(RequestedMenuItem.ID, 1); err != nil {
+		h.logger.Error(err.Error(), "method", r.Method, "url", r.URL)
+		ErrorHandler.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 	err = h.menuService.UpdateMenuItem(r)

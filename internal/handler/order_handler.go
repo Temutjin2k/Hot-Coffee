@@ -38,9 +38,9 @@ func (h *OrderHandler) PostOrder(w http.ResponseWriter, r *http.Request) {
 			ErrorHandler.Error(w, "Requested order item does not exist in menu", http.StatusBadRequest)
 			return
 		}
-		if !h.menuService.IngredientsCheckByID(OrderItem.ProductID, OrderItem.Quantity) {
-			h.logger.Error("Not enough ingridients for your order", "error", err, "method", r.Method, "url", r.URL)
-			ErrorHandler.Error(w, "Not enough ingridients for your order", http.StatusBadRequest)
+		if err = h.menuService.IngredientsCheckByID(OrderItem.ProductID, OrderItem.Quantity); err != nil {
+			h.logger.Error(err.Error(), "error", err, "method", r.Method, "url", r.URL)
+			ErrorHandler.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
 	}
@@ -112,9 +112,9 @@ func (h *OrderHandler) PutOrder(w http.ResponseWriter, r *http.Request) {
 			ErrorHandler.Error(w, "Updated order item does not exist in menu", http.StatusBadRequest)
 			return
 		}
-		if !h.menuService.IngredientsCheckByID(OrderItem.ProductID, OrderItem.Quantity) {
-			h.logger.Error("Not enough ingridients for your updated order", "error", err, "method", r.Method, "url", r.URL)
-			ErrorHandler.Error(w, "Not enough ingridients for your updated order", http.StatusBadRequest)
+		if err = h.menuService.IngredientsCheckByID(OrderItem.ProductID, OrderItem.Quantity); err != nil {
+			h.logger.Error(err.Error(), "error", err, "method", r.Method, "url", r.URL)
+			ErrorHandler.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
 	}
