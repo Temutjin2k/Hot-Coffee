@@ -2,17 +2,17 @@ package main
 
 import (
 	"fmt"
-	"hot-coffee/config"
-	"hot-coffee/internal/dal"
-	"hot-coffee/internal/handler"
-	"hot-coffee/internal/service"
-	"hot-coffee/utils"
 	"log"
 	"log/slog"
 	"net/http"
 	"os"
 	"os/user"
 	"path/filepath"
+
+	"hot-coffee/internal/dal"
+	"hot-coffee/internal/handler"
+	"hot-coffee/internal/service"
+	"hot-coffee/utils"
 )
 
 func main() {
@@ -26,7 +26,7 @@ func main() {
 	}
 
 	// Checking Flags
-	dir, port := config.Flagchecker()
+	dir, port := utils.Flagchecker()
 	path := filepath.Join(user.HomeDir, "hot-coffee", dir)
 
 	if !utils.DirectoryExists(path) {

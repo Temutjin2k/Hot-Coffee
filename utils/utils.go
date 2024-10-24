@@ -1,12 +1,14 @@
 package utils
 
 import (
+	"flag"
 	"fmt"
-	"hot-coffee/config"
 	"io"
 	"os"
 	"os/user"
 	"path/filepath"
+
+	"hot-coffee/config"
 )
 
 func DirectoryExists(path string) bool {
@@ -91,4 +93,12 @@ func copyFile(src string, dst string) error {
 		return err
 	}
 	return nil
+}
+
+func Flagchecker() (string, string) {
+	dir := flag.String("dir", "data", "Path to the data directory")
+	port := flag.String("port", "8080", "Port Number")
+	config.BaseDir = *dir
+	flag.Parse()
+	return *dir, *port
 }
