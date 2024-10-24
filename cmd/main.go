@@ -6,8 +6,6 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
-	"os/user"
-	"path/filepath"
 
 	"hot-coffee/internal/dal"
 	"hot-coffee/internal/handler"
@@ -19,22 +17,22 @@ func main() {
 	// Check for help flag
 	utils.Help(os.Args)
 
-	user, err := user.Current() // Создаем объект user, а уже из него достаем основную директорию user.HomeDir
-	if err != nil {
-		fmt.Println("Error getting user home directory")
-		os.Exit(1)
-	}
-
 	// Checking Flags
 	dir, port := utils.Flagchecker()
-	path := filepath.Join(user.HomeDir, "hot-coffee", dir)
 
-	if !utils.DirectoryExists(path) {
-		utils.CreateDir(dir)
+	err := utils.CreateDir(dir)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "Error creating Base directory. Error: ", err)
 	}
 
+	path := dir
+	// inventoryPath := fmt.Sprintf("%s/inventory.json", path)
+	// menuItemsPath := fmt.Sprintf("%s/menu_items.json", path)
+	// ordersPath := fmt.Sprintf("%s/orders.json", path)
+	logFilePath := fmt.Sprintf("%s/app.log", path)
+
 	// logger init
-	logFile, err := os.OpenFile(path+"/app.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0o666)
+	logFile, err := os.OpenFile(logFilePath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0o666)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "Failed to open log file:", err)
 	}
