@@ -6,7 +6,7 @@ var (
 	BaseDir string
 	// Default inventory data
 	DefaultInventoryData = []models.InventoryItem{
-		{IngredientID: "espresso_shot", Name: "Espresso Shot", Quantity: 453, Unit: "shots"},
+		{IngredientID: "espresso_shot", Name: "Espresso Shot", Quantity: 500, Unit: "shots"},
 		{IngredientID: "milk", Name: "Milk", Quantity: 5000, Unit: "ml"},
 		{IngredientID: "flour", Name: "Flour", Quantity: 6000, Unit: "g"},
 		{IngredientID: "blueberries", Name: "Blueberries", Quantity: 2000, Unit: "g"},

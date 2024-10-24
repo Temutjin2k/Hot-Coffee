@@ -12,3 +12,8 @@ type OrderItem struct {
 	ProductID string `json:"product_id"`
 	Quantity  int    `json:"quantity"`
 }
+
+type OrderRequest struct {
+	CustomerName string      `json:"customer_name"`
+	Items        []OrderItem `json:"items"`
+}
