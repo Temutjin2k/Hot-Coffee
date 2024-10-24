@@ -106,10 +106,13 @@ func (s *OrderService) UpdateOrder(updatedOrder models.Order, OrderID string) er
 
 	for i, order := range existingOrders {
 		if order.ID == OrderID {
+			if order.Status == "closed" {
+				return errors.New("Could not update the order because it is already closed")
+			}
 			existingOrders[i].CustomerName = updatedOrder.CustomerName
 			existingOrders[i].ID = OrderID
 			existingOrders[i].Items = updatedOrder.Items
-			existingOrders[i].Status = "Open"
+			existingOrders[i].Status = "open"
 		}
 	}
 
