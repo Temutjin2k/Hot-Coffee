@@ -26,9 +26,11 @@ func main() {
 	}
 
 	path := dir
-	// inventoryPath := fmt.Sprintf("%s/inventory.json", path)
-	// menuItemsPath := fmt.Sprintf("%s/menu_items.json", path)
-	// ordersPath := fmt.Sprintf("%s/orders.json", path)
+
+	ordersPath := fmt.Sprintf("%s/orders.json", path)
+	menuItemsPath := fmt.Sprintf("%s/menu_items.json", path)
+	inventoryPath := fmt.Sprintf("%s/inventory.json", path)
+
 	logFilePath := fmt.Sprintf("%s/app.log", path)
 
 	// logger init
@@ -41,9 +43,9 @@ func main() {
 	logger := slog.New(slog.NewTextHandler(logFile, nil))
 
 	// Initialize repositories (Data Access Layer)
-	orderRepo := dal.NewOrderRepository()
-	menuRepo := dal.NewMenuRepository()
-	inventoryRepo := dal.NewInventoryRepository()
+	orderRepo := dal.NewOrderRepository(ordersPath)
+	menuRepo := dal.NewMenuRepository(menuItemsPath)
+	inventoryRepo := dal.NewInventoryRepository(inventoryPath)
 
 	// Initialize services (Business Logic Layer)
 	orderService := service.NewOrderService(*orderRepo, *menuRepo)

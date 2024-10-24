@@ -2,24 +2,24 @@ package dal
 
 import (
 	"encoding/json"
-	"hot-coffee/config"
-	"hot-coffee/models"
-	"io/ioutil"
 	"os"
-	"os/user"
 	"path/filepath"
+
+	"hot-coffee/models"
 )
 
 // OrderRepository implements OrderRepository using JSON files
-type OrderRepository struct{}
+type OrderRepository struct {
+	path string
+}
 
 // NewOrderRepository creates a new FileOrderRepository
-func NewOrderRepository() *OrderRepository {
-	return &OrderRepository{}
+func NewOrderRepository(path string) *OrderRepository {
+	return &OrderRepository{path: path}
 }
 
 func (repo *OrderRepository) GetAll() ([]models.Order, error) {
-	content, err := os.ReadFile(config.BaseDir + "/orders.json")
+	content, err := os.ReadFile(repo.path)
 	if len(content) == 0 {
 		return []models.Order{}, err
 	}
@@ -44,7 +44,7 @@ func (repo *OrderRepository) Add(order models.Order) error {
 		return err
 	}
 
-	return os.WriteFile(config.BaseDir+"/orders.json", jsonData, 0o644)
+	return os.WriteFile(repo.path, jsonData, os.ModePerm)
 }
 
 func (repo *OrderRepository) Delete(orderID string) error {
@@ -56,17 +56,13 @@ func (repo *OrderRepository) SaveAll(Orders []models.Order) error {
 	if err != nil {
 		return err
 	}
-	return os.WriteFile(config.BaseDir+"/orders.json", jsonData, 0o644)
+	return os.WriteFile(repo.path, jsonData, 0o644)
 }
 
 func (repo *OrderRepository) GetID() (int, error) {
-	user, err := user.Current()
-	if err != nil {
-		return -1, err
-	}
-	Path := filepath.Join(user.HomeDir, "hot-coffee", config.BaseDir, "config.json")
+	configPath := filepath.Join(filepath.Dir(repo.path), "config.json")
 
-	ConfigContent, err := ioutil.ReadFile(Path)
+	ConfigContent, err := os.ReadFile(configPath)
 	if err != nil {
 		return -1, err
 	}
@@ -83,6 +79,6 @@ func (repo *OrderRepository) GetID() (int, error) {
 	if err != nil {
 		// TODO
 	}
-	os.WriteFile(config.BaseDir+"/config.json", NewContent, os.ModePerm)
+	os.WriteFile(repo.path, NewContent, os.ModePerm)
 	return i, nil
 }

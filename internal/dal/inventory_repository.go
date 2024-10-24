@@ -2,21 +2,23 @@ package dal
 
 import (
 	"encoding/json"
-	"hot-coffee/config"
-	"hot-coffee/models"
 	"os"
+
+	"hot-coffee/models"
 )
 
 // InventoryRepository implements InventoryRepository using JSON files
-type InventoryRepository struct{}
+type InventoryRepository struct {
+	path string
+}
 
 // NewInventoryRepository creates a new FileInventoryRepository
-func NewInventoryRepository() *InventoryRepository {
-	return &InventoryRepository{}
+func NewInventoryRepository(path string) *InventoryRepository {
+	return &InventoryRepository{path: path}
 }
 
 func (repo *InventoryRepository) GetAll() ([]models.InventoryItem, error) {
-	content, err := os.ReadFile(config.BaseDir + "/inventory.json")
+	content, err := os.ReadFile(repo.path)
 	if err != nil {
 		return nil, err
 	}
@@ -58,7 +60,7 @@ func (repo *InventoryRepository) SubtractIngredients(ingredients map[string]floa
 		return err
 	}
 
-	return os.WriteFile(config.BaseDir+"/inventory.json", jsonData, 0o644)
+	return os.WriteFile(repo.path, jsonData, 0o644)
 }
 
 func (repo *InventoryRepository) SaveAll(items []models.InventoryItem) error {
@@ -66,5 +68,5 @@ func (repo *InventoryRepository) SaveAll(items []models.InventoryItem) error {
 	if err != nil {
 		return err
 	}
-	return os.WriteFile(config.BaseDir+"/menu_items.json", jsonData, 0o644)
+	return os.WriteFile(repo.path, jsonData, 0o644)
 }

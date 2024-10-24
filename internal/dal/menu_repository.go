@@ -2,21 +2,23 @@ package dal
 
 import (
 	"encoding/json"
-	"hot-coffee/config"
-	"hot-coffee/models"
 	"os"
+
+	"hot-coffee/models"
 )
 
 // MenuRepository implements MenuRepository using JSON files
-type MenuRepository struct{}
+type MenuRepository struct {
+	path string
+}
 
 // NewMenuRepository creates a new FileMenuRepository
-func NewMenuRepository() *MenuRepository {
-	return &MenuRepository{}
+func NewMenuRepository(path string) *MenuRepository {
+	return &MenuRepository{path: path}
 }
 
 func (repo *MenuRepository) GetAll() ([]models.MenuItem, error) {
-	content, err := os.ReadFile(config.BaseDir + "/menu_items.json")
+	content, err := os.ReadFile(repo.path)
 	if err != nil {
 		return nil, err
 	}
@@ -41,5 +43,5 @@ func (repo *MenuRepository) SaveAll(menuItems []models.MenuItem) error {
 	if err != nil {
 		return err
 	}
-	return os.WriteFile(config.BaseDir+"/menu_items.json", jsonData, 0o644)
+	return os.WriteFile(repo.path, jsonData, 0o644)
 }
