@@ -4,11 +4,12 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"hot-coffee/internal/dal"
-	"hot-coffee/models"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"strings"
+
+	"hot-coffee/internal/dal"
+	"hot-coffee/models"
 )
 
 type MenuService struct {
@@ -43,7 +44,7 @@ func (s *MenuService) DeleteMenuItem(MenuItemID string) error {
 }
 
 func (s *MenuService) UpdateMenuItem(r *http.Request) error {
-	RequestContent, err := ioutil.ReadAll(r.Body)
+	RequestContent, err := io.ReadAll(r.Body)
 	if err != nil {
 		return err
 	}
@@ -81,7 +82,7 @@ func (s *MenuService) MenuCheckByID(MenuItemID string) error {
 			return nil
 		}
 	}
-	return errors.New("The requested menu item to update does not exist in menu") // Item exists in the menu // Item does not exist
+	return errors.New("the requested menu item to update does not exist in menu")
 }
 
 func (s *MenuService) IngredientsCheckByID(menuItemID string, quantity int) error {
@@ -102,19 +103,19 @@ func (s *MenuService) IngredientsCheckByID(menuItemID string, quantity int) erro
 	for _, inventoryItem := range inventoryItems {
 		if value, exists := ingredientsNeeded[inventoryItem.IngredientID]; exists {
 			if value > inventoryItem.Quantity {
-				return errors.New("Not enough ingridients for item") // Not enough ingredients
+				return errors.New("not enough ingredients for item")
 			}
 		}
 	}
 	if flag {
 		return nil
 	}
-	return errors.New("No ingridients for item in inventory")
+	return errors.New("no ingredients for item in inventory")
 }
 
 func (s *MenuService) SubtractIngredientsByID(OrderID string, quantity int) error {
 	if err := s.IngredientsCheckByID(OrderID, quantity); err != nil {
-		return errors.New("Not enough ingredients or needed ingredients do not exist")
+		return errors.New("not enough ingredients or needed ingredients do not exist")
 	}
 
 	ingredients := make(map[string]float64)
@@ -138,10 +139,8 @@ func (s *MenuService) AddMenuItem(menuItem models.MenuItem) error {
 		return err
 	}
 
-	// Append the new menu item to the existing list
 	menuItems = append(menuItems, menuItem)
 
-	// Save the updated list back to the repository
 	return s.menuRepo.SaveAll(menuItems)
 }
 
@@ -168,23 +167,23 @@ func (s *MenuService) GetMenuItems() ([]models.MenuItem, error) {
 
 func (s *MenuService) CheckNewMenu(MenuItem models.MenuItem) error {
 	if strings.TrimSpace(MenuItem.ID) == "" {
-		return errors.New("New menu item's ID is empty")
+		return errors.New("new menu item's ID is empty")
 	}
 	if strings.TrimSpace(MenuItem.Name) == "" {
-		return errors.New("New menu item's Name is empty")
+		return errors.New("new menu item's Name is empty")
 	}
 	if strings.TrimSpace(MenuItem.Description) == "" {
-		return errors.New("New menu item's Description is empty")
+		return errors.New("new menu item's Description is empty")
 	}
 	if MenuItem.Price < 0 {
-		return errors.New("New menu item's Price is awkward")
+		return errors.New("new menu item's Price is awkward")
 	}
 	for _, ingredient := range MenuItem.Ingredients {
 		if strings.TrimSpace(ingredient.IngredientID) == "" {
-			return errors.New("New menu item's ingredient is empty")
+			return errors.New("new menu item's ingredient is empty")
 		}
 		if ingredient.Quantity < 0 {
-			return errors.New("New menu item's quantity is awkward")
+			return errors.New("new menu item's quantity is awkward")
 		}
 	}
 	return nil

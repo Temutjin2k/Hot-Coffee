@@ -2,12 +2,13 @@ package service
 
 import (
 	"errors"
-	"hot-coffee/internal/dal"
-	"hot-coffee/models"
 	"sort"
 	"strconv"
 	"strings"
 	"time"
+
+	"hot-coffee/internal/dal"
+	"hot-coffee/models"
 )
 
 type OrderService struct {
@@ -25,11 +26,11 @@ func NewOrderService(orderRepo dal.OrderRepository, menuRepo dal.MenuRepository)
 // AddOrder adds a new order to the repository
 func (s *OrderService) AddOrder(order models.Order) error {
 	if order.Items == nil || strings.TrimSpace(order.CustomerName) == "" {
-		return errors.New("Womething wrong with your requested order")
+		return errors.New("something wrong with your requested order")
 	}
 	for _, order := range order.Items {
 		if order.Quantity < 1 {
-			return errors.New("Womething wrong with your requested order")
+			return errors.New("something wrong with your requested order")
 		}
 	}
 
@@ -70,17 +71,17 @@ func (s *OrderService) GetOrder(OrderID string) (models.Order, error) {
 	if flag {
 		return NeededOrder, nil
 	}
-	return models.Order{}, errors.New("The order with given ID soes not exist")
+	return models.Order{}, errors.New("the order with given ID soes not exist")
 }
 
 // UpdateOrder updates an existing order
 func (s *OrderService) UpdateOrder(updatedOrder models.Order, OrderID string) error {
 	if updatedOrder.Items == nil || strings.TrimSpace(updatedOrder.CustomerName) == "" {
-		return errors.New("Womething wrong with your updated order")
+		return errors.New("something wrong with your updated order")
 	}
 	for _, order := range updatedOrder.Items {
 		if order.Quantity < 1 {
-			return errors.New("Womething wrong with your updated order")
+			return errors.New("something wrong with your updated order")
 		}
 	}
 	existingOrders, err := s.orderRepo.GetAll()
@@ -91,7 +92,7 @@ func (s *OrderService) UpdateOrder(updatedOrder models.Order, OrderID string) er
 	for i, order := range existingOrders {
 		if order.ID == OrderID {
 			if order.Status == "closed" {
-				return errors.New("Could not update the order because it is already closed")
+				return errors.New("could not update the order because it is already closed")
 			}
 			flag = true
 			existingOrders[i].CustomerName = updatedOrder.CustomerName
@@ -103,7 +104,7 @@ func (s *OrderService) UpdateOrder(updatedOrder models.Order, OrderID string) er
 	if flag {
 		return s.orderRepo.SaveAll(existingOrders)
 	}
-	return errors.New("The requested order does not exist")
+	return errors.New("the requested order does not exist")
 }
 
 func (s *OrderService) GetTotalSales() (models.TotalSales, error) {
@@ -180,7 +181,7 @@ func (s *OrderService) DeleteOrderByID(OrderID string) error {
 	if flag {
 		return s.orderRepo.SaveAll(NewOrders)
 	}
-	return errors.New("The order with given ID does not exist")
+	return errors.New("the order with given ID does not exist")
 }
 
 func (s *OrderService) CloseOrder(OrderID string) error {
@@ -193,13 +194,11 @@ func (s *OrderService) CloseOrder(OrderID string) error {
 	for _, order := range Orders {
 		if order.ID == OrderID {
 			if order.Status == "closed" {
-				return errors.New("The requested order already closed")
+				return errors.New("the requested order already closed")
 			}
 			ClosingOrder.CreatedAt = order.CreatedAt
 			ClosingOrder.CustomerName = order.CustomerName
-			ClosingOrder.ID = OrderID
 			ClosingOrder.Items = order.Items
-			ClosingOrder.Status = "closed"
 		}
 	}
 	for i, order := range Orders {

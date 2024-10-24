@@ -2,6 +2,7 @@ package service
 
 import (
 	"errors"
+
 	"hot-coffee/internal/dal"
 	"hot-coffee/models"
 )
@@ -14,9 +15,7 @@ func NewInventoryService(inventoryRepo dal.InventoryRepository) *InventoryServic
 	return &InventoryService{inventoryRepo: inventoryRepo}
 }
 
-// Some funcs
-// ...
-
+// Adds new item to inventory repository
 func (s *InventoryService) AddInventoryItem(item models.InventoryItem) error {
 	if s.inventoryRepo.Exists(item.IngredientID) {
 		return errors.New("inventory item already exists")
@@ -37,6 +36,7 @@ func (s *InventoryService) AddInventoryItem(item models.InventoryItem) error {
 	return nil
 }
 
+// Returns all items from inventory repository
 func (s *InventoryService) GetAllInventoryItems() ([]models.InventoryItem, error) {
 	items, err := s.inventoryRepo.GetAll()
 	if err != nil {
@@ -45,6 +45,7 @@ func (s *InventoryService) GetAllInventoryItems() ([]models.InventoryItem, error
 	return items, nil
 }
 
+// Return item by id from inventory repository
 func (s *InventoryService) GetItem(id string) (models.InventoryItem, error) {
 	items, err := s.inventoryRepo.GetAll()
 	if err != nil {
@@ -59,7 +60,7 @@ func (s *InventoryService) GetItem(id string) (models.InventoryItem, error) {
 	return models.InventoryItem{}, errors.New("inventory item does not exists")
 }
 
-// Updates Item by id replacing with
+// Updates Item by id replacing with new given Item in inventory repository
 func (s *InventoryService) UpdateItem(id string, newItem models.InventoryItem) error {
 	if !s.inventoryRepo.Exists(id) {
 		return errors.New("inventory item does not exists")
@@ -84,7 +85,7 @@ func (s *InventoryService) UpdateItem(id string, newItem models.InventoryItem) e
 	return nil
 }
 
-// Deletes Item by id
+// Deletes Item by id from inventory repository
 func (s *InventoryService) DeleteItem(id string) error {
 	if !s.inventoryRepo.Exists(id) {
 		return errors.New("inventory item does not exists")
