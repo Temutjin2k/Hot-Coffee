@@ -75,6 +75,6 @@ func (repo *OrderRepository) GetID() (int, error) {
 	if err != nil {
 		// TODO
 	}
-	os.WriteFile(repo.path, NewContent, os.ModePerm)
+	os.WriteFile(configPath, NewContent, os.ModePerm)
 	return i, nil
 }

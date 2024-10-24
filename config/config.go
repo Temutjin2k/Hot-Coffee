@@ -48,4 +48,6 @@ var (
 	}
 
 	DefaultOrdersData = []models.MenuItem{}
+
+	DefaultConfigData = models.OrderID{ID: 0}
 )

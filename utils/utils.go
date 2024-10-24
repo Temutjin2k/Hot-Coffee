@@ -45,6 +45,7 @@ func CreateDir(path string) error {
 	inventoryPath := fmt.Sprintf("%s/inventory.json", path)
 	menuItemsPath := fmt.Sprintf("%s/menu_items.json", path)
 	ordersPath := fmt.Sprintf("%s/orders.json", path)
+	configPath := fmt.Sprintf("%s/config.json", path)
 
 	// Create or initialize inventory.json
 	if _, err := os.Stat(inventoryPath); os.IsNotExist(err) {
@@ -62,8 +63,17 @@ func CreateDir(path string) error {
 		}
 	}
 
+	// Create or initialize orders.json
 	if _, err := os.Stat(ordersPath); os.IsNotExist(err) {
 		err := saveJson(config.DefaultOrdersData, ordersPath)
+		if err != nil {
+			return err
+		}
+	}
+
+	// Create or initialize config.json
+	if _, err := os.Stat(configPath); os.IsNotExist(err) {
+		err := saveJson(config.DefaultConfigData, configPath)
 		if err != nil {
 			return err
 		}
