@@ -32,7 +32,6 @@ func main() {
 	if !utils.DirectoryExists(path) {
 		utils.CreateDir(dir)
 	}
-
 	// logger init
 	logFile, err := os.OpenFile(path+"/app.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0o666)
 	if err != nil {

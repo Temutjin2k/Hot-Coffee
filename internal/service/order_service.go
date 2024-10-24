@@ -70,23 +70,7 @@ func (s *OrderService) GetOrder(OrderID string) (models.Order, error) {
 	if flag {
 		return NeededOrder, nil
 	}
-	return models.Order{}, errors.New("The order does not exist")
-}
-
-// DeleteOrder removes an order by ID
-func (s *OrderService) DeleteOrder(orderID string) error {
-	existingOrders, err := s.orderRepo.GetAll()
-	if err != nil {
-		return err
-	}
-
-	for _, order := range existingOrders {
-		if order.ID == orderID {
-			return s.orderRepo.Delete(orderID)
-		}
-	}
-
-	return errors.New("order not found")
+	return models.Order{}, errors.New("The order with given ID soes not exist")
 }
 
 // UpdateOrder updates an existing order
@@ -103,21 +87,23 @@ func (s *OrderService) UpdateOrder(updatedOrder models.Order, OrderID string) er
 	if err != nil {
 		return err
 	}
-
+	flag := false
 	for i, order := range existingOrders {
 		if order.ID == OrderID {
 			if order.Status == "closed" {
 				return errors.New("Could not update the order because it is already closed")
 			}
+			flag = true
 			existingOrders[i].CustomerName = updatedOrder.CustomerName
 			existingOrders[i].ID = OrderID
 			existingOrders[i].Items = updatedOrder.Items
 			existingOrders[i].Status = "open"
 		}
 	}
-
-	s.orderRepo.SaveAll(existingOrders)
-	return nil
+	if flag {
+		return s.orderRepo.SaveAll(existingOrders)
+	}
+	return errors.New("The requested order does not exist")
 }
 
 func (s *OrderService) GetTotalSales() (models.TotalSales, error) {
@@ -172,14 +158,11 @@ func (s *OrderService) GetPopularItems(popularItemsNum int) (models.PopularItems
 }
 
 func (s *OrderService) DeleteOrderByID(OrderID string) error {
-	// if !s.orderRepo.Exists(id) {
-	// 	return errors.New("inventory item does not exists")
-	// }
-
 	Orders, err := s.GetAllOrders()
 	if err != nil {
 		return err
 	}
+	flag := false
 	NewOrders := make([]models.Order, 0)
 	for _, order := range Orders {
 		if order.ID != OrderID {
@@ -190,10 +173,14 @@ func (s *OrderService) DeleteOrderByID(OrderID string) error {
 			NewOrder.Items = order.Items
 			NewOrder.Status = order.Status
 			NewOrders = append(NewOrders, NewOrder)
+		} else {
+			flag = true
 		}
 	}
-	s.orderRepo.SaveAll(NewOrders)
-	return nil
+	if flag {
+		return s.orderRepo.SaveAll(NewOrders)
+	}
+	return errors.New("The order with given ID does not exist")
 }
 
 func (s *OrderService) CloseOrder(OrderID string) error {
@@ -202,8 +189,12 @@ func (s *OrderService) CloseOrder(OrderID string) error {
 		return nil
 	}
 	var ClosingOrder models.Order
+
 	for _, order := range Orders {
 		if order.ID == OrderID {
+			if order.Status == "closed" {
+				return errors.New("The requested order already closed")
+			}
 			ClosingOrder.CreatedAt = order.CreatedAt
 			ClosingOrder.CustomerName = order.CustomerName
 			ClosingOrder.ID = OrderID
@@ -220,6 +211,6 @@ func (s *OrderService) CloseOrder(OrderID string) error {
 			Orders[i].Status = "closed"
 		}
 	}
-	s.orderRepo.SaveAll(Orders)
-	return nil
+
+	return s.orderRepo.SaveAll(Orders)
 }

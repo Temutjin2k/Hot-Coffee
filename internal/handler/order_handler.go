@@ -73,8 +73,8 @@ func (h *OrderHandler) GetOrders(w http.ResponseWriter, r *http.Request) {
 func (h *OrderHandler) GetOrder(w http.ResponseWriter, r *http.Request) {
 	RequestedOrder, err := h.orderService.GetOrder(r.PathValue("id"))
 	if err != nil {
-		h.logger.Error("Something wrong when getting order by ID", "error", err, "method", r.Method, "url", r.URL)
-		ErrorHandler.Error(w, "Something wrong when getting order by ID", http.StatusInternalServerError)
+		h.logger.Error(err.Error(), "error", err, "method", r.Method, "url", r.URL)
+		ErrorHandler.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	jsonData, err := json.MarshalIndent(RequestedOrder, "", "    ")
@@ -111,9 +111,15 @@ func (h *OrderHandler) PutOrder(w http.ResponseWriter, r *http.Request) {
 	}
 	err = h.orderService.UpdateOrder(RequestedOrder, r.PathValue("id"))
 	if err != nil {
-		h.logger.Error("Could not update order", "error", err, "method", r.Method, "url", r.URL)
-		ErrorHandler.Error(w, "Could not update order", http.StatusInternalServerError)
-		return
+		if err.Error() == "Could not update the order because it is already closed" {
+			h.logger.Error(err.Error(), "error", err, "method", r.Method, "url", r.URL)
+			ErrorHandler.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		} else {
+			h.logger.Error(err.Error(), "error", err, "method", r.Method, "url", r.URL)
+			ErrorHandler.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 	}
 	h.logger.Info("Request handled successfully.", "method", r.Method, "url", r.URL)
 	w.WriteHeader(200)
@@ -122,8 +128,15 @@ func (h *OrderHandler) PutOrder(w http.ResponseWriter, r *http.Request) {
 func (h *OrderHandler) DeleteOrder(w http.ResponseWriter, r *http.Request) {
 	err := h.orderService.DeleteOrderByID(r.PathValue("id"))
 	if err != nil {
-		h.logger.Error("Error updating orders database", "error", err, "method", r.Method, "url", r.URL)
-		ErrorHandler.Error(w, "Error updating orders database", http.StatusInternalServerError)
+		if err.Error() == "The order with given ID does not exist" {
+			h.logger.Error(err.Error(), "error", err, "method", r.Method, "url", r.URL)
+			ErrorHandler.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		} else {
+			h.logger.Error(err.Error(), "error", err, "method", r.Method, "url", r.URL)
+			ErrorHandler.Error(w, "Error updating orders database", http.StatusInternalServerError)
+			return
+		}
 	}
 	h.logger.Info("Request handled successfully.", "method", r.Method, "url", r.URL)
 	w.WriteHeader(204)
@@ -132,9 +145,15 @@ func (h *OrderHandler) DeleteOrder(w http.ResponseWriter, r *http.Request) {
 func (h *OrderHandler) CloseOrder(w http.ResponseWriter, r *http.Request) {
 	Order, err := h.orderService.GetOrder(r.PathValue("id"))
 	if err != nil {
-		h.logger.Error("Something happened when getting order by ID", "error", err, "method", r.Method, "url", r.URL)
-		ErrorHandler.Error(w, "Something happened when getting order by ID", http.StatusInternalServerError)
-		return
+		if err.Error() == "The order with given ID soes not exist" {
+			ErrorHandler.Error(w, err.Error(), http.StatusBadRequest)
+			h.logger.Error(err.Error(), "error", err, "method", r.Method, "url", r.URL)
+			return
+		} else {
+			h.logger.Error(err.Error(), "error", err, "method", r.Method, "url", r.URL)
+			ErrorHandler.Error(w, "Something happened when getting order by ID", http.StatusInternalServerError)
+			return
+		}
 	}
 	for _, item := range Order.Items {
 		err := h.menuService.SubtractIngredientsByID(item.ProductID, item.Quantity)
@@ -145,9 +164,15 @@ func (h *OrderHandler) CloseOrder(w http.ResponseWriter, r *http.Request) {
 	}
 	err = h.orderService.CloseOrder(r.PathValue("id"))
 	if err != nil {
-		h.logger.Error("Something happened when closing order", "error", err, "method", r.Method, "url", r.URL)
-		ErrorHandler.Error(w, "Something happened when closing order", http.StatusInternalServerError)
-		return
+		if err.Error() == "The requested order already closed" {
+			h.logger.Error(err.Error(), "error", err, "method", r.Method, "url", r.URL)
+			ErrorHandler.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		} else {
+			h.logger.Error("Something happened when closing order", "error", err, "method", r.Method, "url", r.URL)
+			ErrorHandler.Error(w, "Something happened when closing order", http.StatusInternalServerError)
+			return
+		}
 	}
 	h.logger.Info("Request handled successfully.", "method", r.Method, "url", r.URL)
 	w.WriteHeader(200)
