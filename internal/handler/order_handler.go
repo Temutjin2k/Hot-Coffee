@@ -5,7 +5,6 @@ import (
 	"hot-coffee/internal/ErrorHandler"
 	"hot-coffee/internal/service"
 	"hot-coffee/models"
-	"io/ioutil"
 	"log/slog"
 	"net/http"
 )
@@ -32,15 +31,14 @@ func (h *OrderHandler) PostOrder(w http.ResponseWriter, r *http.Request) {
 	}
 
 	for _, OrderItem := range NewOrder.Items {
-		err = h.menuService.MenuCheckByID(OrderItem.ProductID)
-		if err != nil {
+		if err = h.menuService.MenuCheckByID(OrderItem.ProductID); err != nil {
 			h.logger.Error("Requested order item does not exist in menu", "error", err, "method", r.Method, "url", r.URL)
 			ErrorHandler.Error(w, "Requested order item does not exist in menu", http.StatusBadRequest)
 			return
 		}
-		if !h.menuService.IngredientsCheckByID(OrderItem.ProductID, OrderItem.Quantity) {
-			h.logger.Error("Not enough ingridients for your order", "error", err, "method", r.Method, "url", r.URL)
-			ErrorHandler.Error(w, "Not enough ingridients for your order", http.StatusBadRequest)
+		if err = h.menuService.IngredientsCheckByID(OrderItem.ProductID, OrderItem.Quantity); err != nil {
+			h.logger.Error(err.Error(), "error", err, "method", r.Method, "url", r.URL)
+			ErrorHandler.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
 	}
@@ -53,6 +51,23 @@ func (h *OrderHandler) PostOrder(w http.ResponseWriter, r *http.Request) {
 	}
 	h.logger.Info("Request handled successfully.", "method", r.Method, "url", r.URL)
 	w.WriteHeader(http.StatusCreated)
+}
+
+func (h *OrderHandler) GetOrders(w http.ResponseWriter, r *http.Request) {
+	Orders, err := h.orderService.GetAllOrders()
+	if err != nil {
+		h.logger.Error("Can not read order data from server", "error", err, "method", r.Method, "url", r.URL)
+		ErrorHandler.Error(w, "Can not read order data from server", http.StatusInternalServerError)
+	}
+	jsonData, err := json.MarshalIndent(Orders, "", "    ")
+	if err != nil {
+		h.logger.Error("Can not convert order data to json", "error", err, "method", r.Method, "url", r.URL)
+		ErrorHandler.Error(w, "Can not convert order data to json", http.StatusInternalServerError)
+	}
+	h.logger.Info("Request handled successfully.", "method", r.Method, "url", r.URL)
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+	w.Write(jsonData)
 }
 
 func (h *OrderHandler) GetOrder(w http.ResponseWriter, r *http.Request) {
@@ -73,48 +88,24 @@ func (h *OrderHandler) GetOrder(w http.ResponseWriter, r *http.Request) {
 	w.Write(jsonData)
 }
 
-func (h *OrderHandler) GetOrders(w http.ResponseWriter, r *http.Request) {
-	Orders, err := h.orderService.GetAllOrders()
-	if err != nil {
-		h.logger.Error("Can not read order data from server", "error", err, "method", r.Method, "url", r.URL)
-		ErrorHandler.Error(w, "Can not read order data from server", http.StatusInternalServerError)
-	}
-	jsonData, err := json.MarshalIndent(Orders, "", "    ")
-	if err != nil {
-		h.logger.Error("Can not convert order data to json", "error", err, "method", r.Method, "url", r.URL)
-		ErrorHandler.Error(w, "Can not convert order data to json", http.StatusInternalServerError)
-	}
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(200)
-	w.Write(jsonData)
-	h.logger.Info("Request handled successfully.", "method", r.Method, "url", r.URL)
-}
-
 func (h *OrderHandler) PutOrder(w http.ResponseWriter, r *http.Request) {
-	Requestcontent, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		h.logger.Error("Could not read request body", "error", err, "method", r.Method, "url", r.URL)
-		ErrorHandler.Error(w, "Could not read request body", http.StatusBadRequest)
-		return
-	}
 	var RequestedOrder models.Order
-	err = json.Unmarshal(Requestcontent, &RequestedOrder)
+	err := json.NewDecoder(r.Body).Decode(&RequestedOrder)
 	if err != nil {
-		h.logger.Error("Could not read request body", "error", err, "method", r.Method, "url", r.URL)
-		ErrorHandler.Error(w, "Could not read request body", http.StatusBadRequest)
+		h.logger.Error("Could not decode request json data", "error", err, "method", r.Method, "url", r.URL)
+		ErrorHandler.Error(w, "Could not decode request json data", http.StatusBadRequest)
 		return
 	}
 
 	for _, OrderItem := range RequestedOrder.Items {
-		err = h.menuService.MenuCheckByID(OrderItem.ProductID)
-		if err != nil {
+		if err = h.menuService.MenuCheckByID(OrderItem.ProductID); err != nil {
 			h.logger.Error("Updated order item does not exist in menu", "error", err, "method", r.Method, "url", r.URL)
 			ErrorHandler.Error(w, "Updated order item does not exist in menu", http.StatusBadRequest)
 			return
 		}
-		if !h.menuService.IngredientsCheckByID(OrderItem.ProductID, OrderItem.Quantity) {
-			h.logger.Error("Not enough ingridients for your updated order", "error", err, "method", r.Method, "url", r.URL)
-			ErrorHandler.Error(w, "Not enough ingridients for your updated order", http.StatusBadRequest)
+		if err = h.menuService.IngredientsCheckByID(OrderItem.ProductID, OrderItem.Quantity); err != nil {
+			h.logger.Error(err.Error(), "error", err, "method", r.Method, "url", r.URL)
+			ErrorHandler.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
 	}

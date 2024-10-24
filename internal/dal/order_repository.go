@@ -20,6 +20,9 @@ func NewOrderRepository() *OrderRepository {
 
 func (repo *OrderRepository) GetAll() ([]models.Order, error) {
 	content, err := os.ReadFile(config.BaseDir + "/orders.json")
+	if len(content) == 0 {
+		return []models.Order{}, err
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -34,7 +37,6 @@ func (repo *OrderRepository) Add(order models.Order) error {
 	if err != nil {
 		return err
 	}
-
 	orders = append(orders, order)
 
 	jsonData, err := json.MarshalIndent(orders, "", "    ")

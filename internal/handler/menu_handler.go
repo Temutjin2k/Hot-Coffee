@@ -5,7 +5,6 @@ import (
 	"hot-coffee/internal/ErrorHandler"
 	"hot-coffee/internal/service"
 	"hot-coffee/models"
-	"io/ioutil"
 	"log/slog"
 	"net/http"
 )
@@ -27,26 +26,26 @@ func (h *MenuHandler) PostMenu(w http.ResponseWriter, r *http.Request) {
 		ErrorHandler.Error(w, "Could not decode request json data", http.StatusBadRequest)
 		return
 	}
-	err = h.menuService.CheckNewMenu(newItem)
-	if err != nil {
+	if err = h.menuService.CheckNewMenu(newItem); err != nil {
 		h.logger.Error(err.Error(), "error", err, "method", r.Method, "url", r.URL)
 		ErrorHandler.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
 	// Use the service to check if the item already exists
-	if h.menuService.MenuCheck(newItem) {
+	if err = h.menuService.MenuCheckByID(newItem.ID); err != nil {
 		h.logger.Error("The requested menu item already exists in current menu", "error", err, "method", r.Method, "url", r.URL)
 		ErrorHandler.Error(w, "The requested menu item already exists in current menu", http.StatusBadRequest)
 		return
 	}
-	if !h.menuService.IngredientsCheck(newItem, 1) {
-		h.logger.Error("No ingridients for new menu item or not enough ingridients even for 1 item", "method", r.Method, "url", r.URL)
-		ErrorHandler.Error(w, "No ingridients for new menu item or not enough ingridients even for 1 item", http.StatusBadRequest)
+	if err = h.menuService.IngredientsCheckByID(newItem.ID, 1); err != nil {
+		h.logger.Error(err.Error(), "method", r.Method, "url", r.URL)
+		ErrorHandler.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
+
 	// Add the new menu item using the service
-	if err := h.menuService.AddMenuItem(newItem); err != nil {
+	if err = h.menuService.AddMenuItem(newItem); err != nil {
 		h.logger.Error(err.Error(), "error", err, "method", r.Method, "url", r.URL)
 		ErrorHandler.Error(w, "Could not add menu item", http.StatusInternalServerError)
 		return
@@ -96,18 +95,11 @@ func (h *MenuHandler) PutMenuItem(w http.ResponseWriter, r *http.Request) {
 		ErrorHandler.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	RequestContent, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		h.logger.Error("Error reading body of request", "error", err, "method", r.Method, "url", r.URL)
-		ErrorHandler.Error(w, "Something wrong with your request", http.StatusInternalServerError)
-		return
-	}
-
 	var RequestedMenuItem models.MenuItem
-	err = json.Unmarshal(RequestContent, &RequestedMenuItem)
+	err = json.NewDecoder(r.Body).Decode(&RequestedMenuItem)
 	if err != nil {
-		h.logger.Error("Error converting menu item to json data", "error", err, "method", r.Method, "url", r.URL)
-		ErrorHandler.Error(w, "Something wrong with your request", http.StatusInternalServerError)
+		h.logger.Error(err.Error(), "error", err, "method", r.Method, "url", r.URL)
+		ErrorHandler.Error(w, "Could not read requested menu item", http.StatusInternalServerError)
 		return
 	}
 	err = h.menuService.CheckNewMenu(RequestedMenuItem)
@@ -116,9 +108,9 @@ func (h *MenuHandler) PutMenuItem(w http.ResponseWriter, r *http.Request) {
 		ErrorHandler.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	if !h.menuService.IngredientsCheck(RequestedMenuItem, 1) {
-		h.logger.Error("No ingridients for new menu item or not enough ingridients even for 1 item", "method", r.Method, "url", r.URL)
-		ErrorHandler.Error(w, "No ingridients for new menu item or not enough ingridients even for 1 item", http.StatusBadRequest)
+	if err = h.menuService.IngredientsCheckByID(RequestedMenuItem.ID, 1); err != nil {
+		h.logger.Error(err.Error(), "method", r.Method, "url", r.URL)
+		ErrorHandler.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 	err = h.menuService.UpdateMenuItem(r)
