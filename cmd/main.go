@@ -2,38 +2,39 @@ package main
 
 import (
 	"fmt"
-	"hot-coffee/config"
-	"hot-coffee/internal/dal"
-	"hot-coffee/internal/handler"
-	"hot-coffee/internal/service"
-	"hot-coffee/utils"
 	"log"
 	"log/slog"
 	"net/http"
 	"os"
-	"os/user"
-	"path/filepath"
+
+	"hot-coffee/internal/dal"
+	"hot-coffee/internal/handler"
+	"hot-coffee/internal/service"
+	"hot-coffee/utils"
 )
 
 func main() {
 	// Check for help flag
 	utils.Help(os.Args)
 
-	user, err := user.Current() // Создаем объект user, а уже из него достаем основную директорию user.HomeDir
-	if err != nil {
-		fmt.Println("Error getting user home directory")
-		os.Exit(1)
-	}
-
 	// Checking Flags
-	dir, port := config.Flagchecker()
-	path := filepath.Join(user.HomeDir, "hot-coffee", dir)
+	dir, port := utils.Flagchecker()
 
-	if !utils.DirectoryExists(path) {
-		utils.CreateDir(dir)
+	err := utils.CreateDir(dir)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "Error creating Base directory. Error: ", err)
 	}
+
+	path := dir
+
+	ordersPath := fmt.Sprintf("%s/orders.json", path)
+	menuItemsPath := fmt.Sprintf("%s/menu_items.json", path)
+	inventoryPath := fmt.Sprintf("%s/inventory.json", path)
+
+	logFilePath := fmt.Sprintf("%s/app.log", path)
+
 	// logger init
-	logFile, err := os.OpenFile(path+"/app.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0o666)
+	logFile, err := os.OpenFile(logFilePath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0o666)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "Failed to open log file:", err)
 	}
@@ -42,9 +43,9 @@ func main() {
 	logger := slog.New(slog.NewTextHandler(logFile, nil))
 
 	// Initialize repositories (Data Access Layer)
-	orderRepo := dal.NewOrderRepository()
-	menuRepo := dal.NewMenuRepository()
-	inventoryRepo := dal.NewInventoryRepository()
+	orderRepo := dal.NewOrderRepository(ordersPath)
+	menuRepo := dal.NewMenuRepository(menuItemsPath)
+	inventoryRepo := dal.NewInventoryRepository(inventoryPath)
 
 	// Initialize services (Business Logic Layer)
 	orderService := service.NewOrderService(*orderRepo, *menuRepo)

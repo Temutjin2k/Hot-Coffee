@@ -1,12 +1,12 @@
 package utils
 
 import (
+	"encoding/json"
+	"flag"
 	"fmt"
-	"hot-coffee/config"
-	"io"
 	"os"
-	"os/user"
-	"path/filepath"
+
+	"hot-coffee/config"
 )
 
 func DirectoryExists(path string) bool {
@@ -35,60 +35,55 @@ Options:
 	}
 }
 
-func CreateDir(dir string) {
-	config.BaseDir = dir
-
-	user, err := user.Current() // Создаем объект user, а уже из него достаем основную директорию user.HomeDir
-	if err != nil {
-		fmt.Println("Error getting user home directory")
-		os.Exit(1)
+func CreateDir(path string) error {
+	// Ensure the directory exists
+	if err := os.MkdirAll(path, os.ModePerm); err != nil {
+		fmt.Printf("Error creating directory: %v\n", err)
+		return err
 	}
 
-	path := filepath.Join(user.HomeDir, "hot-coffee", dir)
+	inventoryPath := fmt.Sprintf("%s/inventory.json", path)
+	menuItemsPath := fmt.Sprintf("%s/menu_items.json", path)
+	ordersPath := fmt.Sprintf("%s/orders.json", path)
 
-	err = os.MkdirAll(path, os.ModePerm)
-	if err != nil {
-		fmt.Println("Something went wrong when 5creating a data directory")
-		os.Exit(1)
-	}
-
-	path = filepath.Join(user.HomeDir, "hot-coffee", "data")
-	entries, err := os.ReadDir(path)
-	if err != nil {
-		fmt.Println("Something went wrong when creating a data directory")
-		os.Exit(1)
-	}
-
-	for _, entry := range entries {
-		scrPath := filepath.Join(user.HomeDir, "hot-coffee", "data", entry.Name())
-		dstPath := filepath.Join(user.HomeDir, "hot-coffee", config.BaseDir, entry.Name())
-		err := copyFile(scrPath, dstPath)
+	// Create or initialize inventory.json
+	if _, err := os.Stat(inventoryPath); os.IsNotExist(err) {
+		err := saveJson(config.DefaultInventoryData, inventoryPath)
 		if err != nil {
-			fmt.Println("Something went wrong when creating a data directory")
-			os.Exit(1)
+			return err
 		}
 	}
-	scrPath := filepath.Join(user.HomeDir, "hot-coffee", "config", "config.json")
-	dstPath := filepath.Join(user.HomeDir, "hot-coffee", config.BaseDir, "config.json")
-	copyFile(scrPath, dstPath)
+
+	// Create or initialize menu_items.json
+	if _, err := os.Stat(menuItemsPath); os.IsNotExist(err) {
+		err := saveJson(config.DefaultMenuItemsData, menuItemsPath)
+		if err != nil {
+			return err
+		}
+	}
+
+	if _, err := os.Stat(ordersPath); os.IsNotExist(err) {
+		err := saveJson(config.DefaultOrdersData, ordersPath)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
-func copyFile(src string, dst string) error {
-	sourceFile, err := os.Open(src)
-	if err != nil {
-		fmt.Println("Something went wrong when creating a data directory")
-		os.Exit(1)
-	}
-	defer sourceFile.Close()
-	dstFile, err := os.Create(dst)
-	if err != nil {
-		fmt.Println("Something went wrong when creating a data directory")
-		os.Exit(1)
-	}
-	defer dstFile.Close()
-	_, err = io.Copy(dstFile, sourceFile)
+func saveJson(items any, path string) error {
+	jsonData, err := json.MarshalIndent(items, "", "    ")
 	if err != nil {
 		return err
 	}
-	return nil
+	return os.WriteFile(path, jsonData, 0o644)
+}
+
+func Flagchecker() (string, string) {
+	dir := flag.String("dir", "data", "Path to the data directory")
+	port := flag.String("port", "8080", "Port Number")
+	flag.Parse()
+
+	config.BaseDir = *dir
+	return *dir, *port
 }
