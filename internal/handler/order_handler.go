@@ -151,6 +151,11 @@ func (h *OrderHandler) DeleteOrder(w http.ResponseWriter, r *http.Request) {
 
 func (h *OrderHandler) CloseOrder(w http.ResponseWriter, r *http.Request) {
 	Order, err := h.orderService.GetOrder(r.PathValue("id"))
+	if Order.Status == "closed" {
+		ErrorHandler.Error(w, "The order is already closed", http.StatusBadRequest)
+		h.logger.Error("The order is already closed", "method", r.Method, "url", r.URL)
+		return
+	}
 	if err != nil {
 		if err.Error() == "The order with given ID soes not exist" {
 			ErrorHandler.Error(w, err.Error(), http.StatusBadRequest)
