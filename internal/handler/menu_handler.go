@@ -2,11 +2,12 @@ package handler
 
 import (
 	"encoding/json"
+	"log/slog"
+	"net/http"
+
 	"hot-coffee/internal/ErrorHandler"
 	"hot-coffee/internal/service"
 	"hot-coffee/models"
-	"log/slog"
-	"net/http"
 )
 
 type MenuHandler struct {
@@ -33,13 +34,13 @@ func (h *MenuHandler) PostMenu(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Use the service to check if the item already exists
-	if err = h.menuService.MenuCheckByID(newItem.ID); err != nil {
-		h.logger.Error("The requested menu item already exists in current menu", "error", err, "method", r.Method, "url", r.URL)
-		ErrorHandler.Error(w, "The requested menu item already exists in current menu", http.StatusBadRequest)
+	if err = h.menuService.MenuCheckByID(newItem.ID, false); err != nil {
+		h.logger.Error(err.Error(), "error", err, "method", r.Method, "url", r.URL)
+		ErrorHandler.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	if err = h.menuService.IngredientsCheckByID(newItem.ID, 1); err != nil {
-		h.logger.Error(err.Error(), "method", r.Method, "url", r.URL)
+	if err = h.menuService.IngredientsCheckForNewItem(newItem); err != nil {
+		h.logger.Error(err.Error(), "method", r.Method, "url", r.URL, "error", err)
 		ErrorHandler.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
@@ -73,8 +74,15 @@ func (h *MenuHandler) GetMenu(w http.ResponseWriter, r *http.Request) {
 func (h *MenuHandler) GetMenuItem(w http.ResponseWriter, r *http.Request) {
 	MenuItem, err := h.menuService.GetMenuItem(r.PathValue("id"))
 	if err != nil {
-		h.logger.Error("Could not get menu item", "error", err, "method", r.Method, "url", r.URL)
-		ErrorHandler.Error(w, "Could not read menu database", http.StatusInternalServerError)
+		if err.Error() == "could not find menu item by the given id" {
+			h.logger.Error(err.Error(), "error", err, "method", r.Method, "url", r.URL)
+			ErrorHandler.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		} else {
+			h.logger.Error(err.Error(), "error", err, "method", r.Method, "url", r.URL)
+			ErrorHandler.Error(w, "Could not read menu database", http.StatusInternalServerError)
+			return
+		}
 	}
 	jsonData, err := json.MarshalIndent(MenuItem, "", "    ")
 	if err != nil {
@@ -89,7 +97,7 @@ func (h *MenuHandler) GetMenuItem(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *MenuHandler) PutMenuItem(w http.ResponseWriter, r *http.Request) {
-	err := h.menuService.MenuCheckByID(r.PathValue("id"))
+	err := h.menuService.MenuCheckByID(r.PathValue("id"), true)
 	if err != nil {
 		h.logger.Error(err.Error(), "error", err, "method", r.Method, "url", r.URL)
 		ErrorHandler.Error(w, err.Error(), http.StatusInternalServerError)
@@ -102,20 +110,23 @@ func (h *MenuHandler) PutMenuItem(w http.ResponseWriter, r *http.Request) {
 		ErrorHandler.Error(w, "Could not read requested menu item", http.StatusInternalServerError)
 		return
 	}
+
 	err = h.menuService.CheckNewMenu(RequestedMenuItem)
 	if err != nil {
 		h.logger.Error(err.Error(), "error", err, "method", r.Method, "url", r.URL)
 		ErrorHandler.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	if err = h.menuService.IngredientsCheckByID(RequestedMenuItem.ID, 1); err != nil {
+
+	if err = h.menuService.IngredientsCheckForNewItem(RequestedMenuItem); err != nil {
 		h.logger.Error(err.Error(), "method", r.Method, "url", r.URL)
 		ErrorHandler.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	err = h.menuService.UpdateMenuItem(r)
+
+	err = h.menuService.UpdateMenuItem(RequestedMenuItem)
 	if err != nil {
-		h.logger.Error("Could not update menu database", "error", err, "method", r.Method, "url", r.URL)
+		h.logger.Error(err.Error(), "error", err, "method", r.Method, "url", r.URL)
 		ErrorHandler.Error(w, "Could not update menu database", http.StatusInternalServerError)
 		return
 	}
@@ -124,7 +135,7 @@ func (h *MenuHandler) PutMenuItem(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *MenuHandler) DeleteMenuItem(w http.ResponseWriter, r *http.Request) {
-	err := h.menuService.MenuCheckByID(r.PathValue("id"))
+	err := h.menuService.MenuCheckByID(r.PathValue("id"), true)
 	if err != nil {
 		h.logger.Error(err.Error(), "error", err, "method", r.Method, "url", r.URL)
 		ErrorHandler.Error(w, err.Error(), http.StatusInternalServerError)

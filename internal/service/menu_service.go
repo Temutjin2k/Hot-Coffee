@@ -1,11 +1,7 @@
 package service
 
 import (
-	"encoding/json"
 	"errors"
-	"fmt"
-	"io"
-	"net/http"
 	"strings"
 
 	"hot-coffee/internal/dal"
@@ -43,46 +39,46 @@ func (s *MenuService) DeleteMenuItem(MenuItemID string) error {
 	return nil
 }
 
-func (s *MenuService) UpdateMenuItem(r *http.Request) error {
-	RequestContent, err := io.ReadAll(r.Body)
-	if err != nil {
-		return err
-	}
-
-	var RequestedMenuItem models.MenuItem
-	err = json.Unmarshal(RequestContent, &RequestedMenuItem)
-	if err != nil {
-		return err
-	}
-
+func (s *MenuService) UpdateMenuItem(menuItem models.MenuItem) error {
 	MenuItems, err := s.menuRepo.GetAll()
 	if err != nil {
 		return err
 	}
 
 	for i, MenuItem := range MenuItems {
-		if MenuItem.ID == r.PathValue("id") {
-			fmt.Println(r.PathValue("id"))
-			MenuItems[i].Description = RequestedMenuItem.Description
-			MenuItems[i].ID = r.PathValue("id")
-			MenuItems[i].Ingredients = RequestedMenuItem.Ingredients
-			MenuItems[i].Name = RequestedMenuItem.Name
-			MenuItems[i].Price = RequestedMenuItem.Price
+		if MenuItem.ID == menuItem.ID {
+			MenuItems[i].Description = menuItem.Description
+			MenuItems[i].ID = menuItem.ID
+			MenuItems[i].Ingredients = menuItem.Ingredients
+			MenuItems[i].Name = menuItem.Name
+			MenuItems[i].Price = menuItem.Price
 		}
 	}
 	s.menuRepo.SaveAll(MenuItems)
 	return nil
 }
 
-func (s *MenuService) MenuCheckByID(MenuItemID string) error {
-	// Use the ProductID of the single menu item to check against existing menu items
+func (s *MenuService) MenuCheckByID(MenuItemID string, isDelete bool) error {
 	menuItems, _ := s.menuRepo.GetAll()
-	for _, item := range menuItems {
-		if item.ID == MenuItemID {
+	if isDelete {
+		flag := false
+		for _, item := range menuItems {
+			if item.ID == MenuItemID {
+				flag = true
+			}
+		}
+		if flag {
 			return nil
+		} else {
+			return errors.New("the requested menu item does not exist in menu")
 		}
 	}
-	return errors.New("the requested menu item to update does not exist in menu")
+	for _, item := range menuItems {
+		if item.ID == MenuItemID {
+			return errors.New("the requested menu item to add already exists in menu")
+		}
+	}
+	return nil
 }
 
 func (s *MenuService) IngredientsCheckByID(menuItemID string, quantity int) error {
@@ -91,7 +87,6 @@ func (s *MenuService) IngredientsCheckByID(menuItemID string, quantity int) erro
 	flag := false
 	for _, item := range menuItems {
 		if item.ID == menuItemID {
-			flag = true
 			for _, ingr := range item.Ingredients {
 				ingredientsNeeded[ingr.IngredientID] += float64(ingr.Quantity) * float64(quantity)
 			}
@@ -102,6 +97,7 @@ func (s *MenuService) IngredientsCheckByID(menuItemID string, quantity int) erro
 
 	for _, inventoryItem := range inventoryItems {
 		if value, exists := ingredientsNeeded[inventoryItem.IngredientID]; exists {
+			flag = true
 			if value > inventoryItem.Quantity {
 				return errors.New("not enough ingredients for item")
 			}
@@ -111,6 +107,25 @@ func (s *MenuService) IngredientsCheckByID(menuItemID string, quantity int) erro
 		return nil
 	}
 	return errors.New("no ingredients for item in inventory")
+}
+
+func (s *MenuService) IngredientsCheckForNewItem(menuItem models.MenuItem) error {
+	inventoryItems, _ := s.inventoryRepo.GetAll()
+	count := 0
+	for _, inventoryItem := range inventoryItems {
+		for _, ingredients := range menuItem.Ingredients {
+			if ingredients.IngredientID == inventoryItem.IngredientID {
+				count++
+				if ingredients.Quantity > inventoryItem.Quantity {
+					return errors.New("not enough ingredients for item")
+				}
+			}
+		}
+	}
+	if count != len(menuItem.Ingredients) {
+		return errors.New("no ingredients for item in inventory")
+	}
+	return nil
 }
 
 func (s *MenuService) SubtractIngredientsByID(OrderID string, quantity int) error {
@@ -154,7 +169,7 @@ func (s *MenuService) GetMenuItem(MenuItemID string) (models.MenuItem, error) {
 			return MenuItems[i], nil
 		}
 	}
-	return models.MenuItem{}, err
+	return models.MenuItem{}, errors.New("could not find menu item by the given id")
 }
 
 func (s *MenuService) GetMenuItems() ([]models.MenuItem, error) {
