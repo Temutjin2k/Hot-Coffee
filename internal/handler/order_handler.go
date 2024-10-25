@@ -118,11 +118,7 @@ func (h *OrderHandler) PutOrder(w http.ResponseWriter, r *http.Request) {
 	}
 	err = h.orderService.UpdateOrder(RequestedOrder, r.PathValue("id"))
 	if err != nil {
-		if err.Error() == "could not update the order because it is already closed" {
-			h.logger.Error(err.Error(), "error", err, "method", r.Method, "url", r.URL)
-			ErrorHandler.Error(w, err.Error(), http.StatusBadRequest)
-			return
-		} else if err.Error() == "something wrong with your updated order" {
+		if err.Error() == "could not update the order because it is already closed" || err.Error() == "something wrong with your updated order" || err.Error() == "the requested order does not exist" {
 			h.logger.Error(err.Error(), "error", err, "method", r.Method, "url", r.URL)
 			ErrorHandler.Error(w, err.Error(), http.StatusBadRequest)
 			return
