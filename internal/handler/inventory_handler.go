@@ -38,7 +38,7 @@ func (h *InventoryHandler) PostInventory(w http.ResponseWriter, r *http.Request)
 	err = h.inventoryService.AddInventoryItem(newItem)
 	if err != nil {
 		h.logger.Error("Could not add new inventory item", "error", err, "method", r.Method, "url", r.URL)
-		ErrorHandler.Error(w, "Could not add new inventory item", http.StatusInternalServerError)
+		ErrorHandler.Error(w, "Could not add new inventory item Error: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -107,7 +107,7 @@ func (h *InventoryHandler) PutInventoryItem(w http.ResponseWriter, r *http.Reque
 	err = h.inventoryService.UpdateItem(r.PathValue("id"), newItem)
 	if err != nil {
 		h.logger.Error("Error updating inventory item", "error", err, "method", r.Method, "url", r.URL)
-		ErrorHandler.Error(w, "Error updating inventory item", http.StatusInternalServerError)
+		ErrorHandler.Error(w, "Error updating inventory item Error: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
