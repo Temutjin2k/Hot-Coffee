@@ -28,6 +28,13 @@ func (h *InventoryHandler) PostInventory(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
+	// Checking for empty fieldss
+	if newItem.Name == "" || newItem.IngredientID == "" || newItem.Unit == "" || newItem.Quantity <= 0 {
+		h.logger.Error("Some fields are empty, equal or less than zero", "method", r.Method, "url", r.URL)
+		ErrorHandler.Error(w, "Some fields are empty, equal or less than zero", http.StatusBadRequest)
+		return
+	}
+
 	err = h.inventoryService.AddInventoryItem(newItem)
 	if err != nil {
 		h.logger.Error("Could not add new inventory item", "error", err, "method", r.Method, "url", r.URL)
@@ -88,6 +95,12 @@ func (h *InventoryHandler) PutInventoryItem(w http.ResponseWriter, r *http.Reque
 	if err != nil {
 		h.logger.Error("Could not decode json data", "error", err, "method", r.Method, "url", r.URL)
 		ErrorHandler.Error(w, "Could not decode request json data", http.StatusBadRequest)
+		return
+	}
+
+	if newItem.Name == "" || newItem.IngredientID == "" || newItem.Unit == "" || newItem.Quantity <= 0 {
+		h.logger.Error("Some fields are empty", "method", r.Method, "url", r.URL)
+		ErrorHandler.Error(w, "Some fields are empty, equal or less than zero", http.StatusBadRequest)
 		return
 	}
 

@@ -21,13 +21,6 @@ func (s *InventoryService) AddInventoryItem(item models.InventoryItem) error {
 		return errors.New("inventory item already exists")
 	}
 
-	if item.Quantity <= 0 {
-		return errors.New("inventory item quantity can not be equal or less than 0")
-	}
-	if item.Name == "" || item.IngredientID == "" {
-		return errors.New("item Name or IngredientID is empty")
-	}
-
 	ingridientItems, err := s.inventoryRepo.GetAll()
 	if err != nil {
 		return err
@@ -71,13 +64,6 @@ func (s *InventoryService) GetItem(id string) (models.InventoryItem, error) {
 func (s *InventoryService) UpdateItem(id string, newItem models.InventoryItem) error {
 	if !s.inventoryRepo.Exists(id) {
 		return errors.New("inventory item does not exists")
-	}
-
-	if newItem.Quantity <= 0 {
-		return errors.New("inventory item quantity can not be equal or less than 0")
-	}
-	if newItem.Name == "" || newItem.IngredientID == "" {
-		return errors.New("item Name or IngredientID is empty")
 	}
 
 	items, err := s.inventoryRepo.GetAll()
