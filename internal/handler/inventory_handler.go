@@ -2,11 +2,12 @@ package handler
 
 import (
 	"encoding/json"
+	"log/slog"
+	"net/http"
+
 	"hot-coffee/internal/ErrorHandler"
 	"hot-coffee/internal/service"
 	"hot-coffee/models"
-	"log/slog"
-	"net/http"
 )
 
 type InventoryHandler struct {
@@ -35,6 +36,7 @@ func (h *InventoryHandler) PostInventory(w http.ResponseWriter, r *http.Request)
 	}
 
 	h.logger.Info("Request handled successfully.", "method", r.Method, "url", r.URL)
+	w.WriteHeader(http.StatusCreated)
 }
 
 func (h *InventoryHandler) GetInventory(w http.ResponseWriter, r *http.Request) {
