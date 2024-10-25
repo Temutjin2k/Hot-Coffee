@@ -59,11 +59,13 @@ func (h *MenuHandler) GetMenu(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		h.logger.Error("Could not read menu database", "error", err, "method", r.Method, "url", r.URL)
 		ErrorHandler.Error(w, "Could not read menu database", http.StatusInternalServerError)
+		return
 	}
 	jsonData, err := json.MarshalIndent(MenuItems, "", "    ")
 	if err != nil {
 		h.logger.Error("Could not read menu database", "error", err, "method", r.Method, "url", r.URL)
 		ErrorHandler.Error(w, "Could not read menu items", http.StatusInternalServerError)
+		return
 	}
 	h.logger.Info("Request handled successfully.", "method", r.Method, "url", r.URL)
 	w.Header().Set("Content-Type", "application/json")
