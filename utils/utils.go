@@ -4,8 +4,9 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"hot-coffee/config"
 	"os"
+
+	"hot-coffee/config"
 )
 
 func DirectoryExists(path string) bool {
