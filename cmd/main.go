@@ -6,6 +6,7 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
+	"strconv"
 
 	"hot-coffee/internal/dal"
 	"hot-coffee/internal/handler"
@@ -20,9 +21,20 @@ func main() {
 	// Checking Flags
 	dir, port := utils.Flagchecker()
 
-	err := utils.CreateDir(dir)
+	checkPort, err := strconv.Atoi(port)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "Error creating Base directory. Error: ", err)
+		os.Exit(1)
+	}
+	if checkPort < 1024 || checkPort > 49151 {
+		fmt.Fprintln(os.Stderr, "Port not allowed. Only 1024 <= x <= 49151", err)
+		os.Exit(1)
+	}
+
+	err = utils.CreateDir(dir)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "Error creating Base directory. Error: ", err)
+		os.Exit(1)
 	}
 
 	path := dir
@@ -50,12 +62,12 @@ func main() {
 	// Initialize services (Business Logic Layer)
 	orderService := service.NewOrderService(*orderRepo, *menuRepo)
 	menuService := service.NewMenuService(*menuRepo, *inventoryRepo)
-	inventoryService := service.NewInventoryService(*inventoryRepo) // TODO
+	inventoryService := service.NewInventoryService(*inventoryRepo)
 
 	// Initialize handlers (Presentation Layer)
 	orderHandler := handler.NewOrderHandler(orderService, menuService, logger)
 	menuHandler := handler.NewMenuHandler(menuService, logger)
-	inventoryHandler := handler.NewInventoryHandler(inventoryService, logger) // TODO
+	inventoryHandler := handler.NewInventoryHandler(inventoryService, logger)
 	reportHandler := handler.NewAggregationHandler(orderService, logger)
 
 	// Setup HTTP routes
