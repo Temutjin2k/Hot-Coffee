@@ -32,7 +32,7 @@ func (h *OrderHandler) PostOrder(w http.ResponseWriter, r *http.Request) {
 	}
 
 	for _, OrderItem := range NewOrder.Items {
-		if err = h.menuService.MenuCheckByID(OrderItem.ProductID, false); err != nil {
+		if err = h.menuService.MenuCheckByID(OrderItem.ProductID, true); err != nil {
 			h.logger.Error("Requested order item does not exist in menu", "error", err, "method", r.Method, "url", r.URL)
 			ErrorHandler.Error(w, "Requested order item does not exist in menu", http.StatusBadRequest)
 			return
@@ -105,7 +105,7 @@ func (h *OrderHandler) PutOrder(w http.ResponseWriter, r *http.Request) {
 	}
 
 	for _, OrderItem := range RequestedOrder.Items {
-		if err = h.menuService.MenuCheckByID(OrderItem.ProductID, false); err != nil {
+		if err = h.menuService.MenuCheckByID(OrderItem.ProductID, true); err != nil {
 			h.logger.Error("Updated order item does not exist in menu", "error", err, "method", r.Method, "url", r.URL)
 			ErrorHandler.Error(w, "Updated order item does not exist in menu", http.StatusBadRequest)
 			return
@@ -139,7 +139,7 @@ func (h *OrderHandler) PutOrder(w http.ResponseWriter, r *http.Request) {
 func (h *OrderHandler) DeleteOrder(w http.ResponseWriter, r *http.Request) {
 	err := h.orderService.DeleteOrderByID(r.PathValue("id"))
 	if err != nil {
-		if err.Error() == "The order with given ID does not exist" {
+		if err.Error() == "the order with given ID does not exist" {
 			h.logger.Error(err.Error(), "error", err, "method", r.Method, "url", r.URL)
 			ErrorHandler.Error(w, err.Error(), http.StatusBadRequest)
 			return

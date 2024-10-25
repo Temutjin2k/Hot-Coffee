@@ -70,6 +70,12 @@ func (h *InventoryHandler) GetInventory(w http.ResponseWriter, r *http.Request) 
 func (h *InventoryHandler) GetInventoryItem(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")
 
+	if !h.inventoryService.Exists(id) {
+		h.logger.Error("Inventory item does not exists", "method", r.Method, "url", r.URL)
+		ErrorHandler.Error(w, "Inventory item does not exists", http.StatusBadRequest)
+		return
+	}
+
 	inventoryItem, err := h.inventoryService.GetItem(id)
 	if err != nil {
 		h.logger.Error("Could not get inventory item", "error", err, "method", r.Method, "url", r.URL)
@@ -104,7 +110,15 @@ func (h *InventoryHandler) PutInventoryItem(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	err = h.inventoryService.UpdateItem(r.PathValue("id"), newItem)
+	id := r.PathValue("id")
+
+	if !h.inventoryService.Exists(id) {
+		h.logger.Error("Inventory item does not exists", "method", r.Method, "url", r.URL)
+		ErrorHandler.Error(w, "Inventory item does not exists", http.StatusBadRequest)
+		return
+	}
+
+	err = h.inventoryService.UpdateItem(id, newItem)
 	if err != nil {
 		h.logger.Error("Error updating inventory item", "error", err, "method", r.Method, "url", r.URL)
 		ErrorHandler.Error(w, "Error updating inventory item Error: "+err.Error(), http.StatusInternalServerError)
@@ -116,6 +130,13 @@ func (h *InventoryHandler) PutInventoryItem(w http.ResponseWriter, r *http.Reque
 
 func (h *InventoryHandler) DeleteInventoryItem(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")
+
+	if !h.inventoryService.Exists(id) {
+		h.logger.Error("Inventory item does not exists", "method", r.Method, "url", r.URL)
+		ErrorHandler.Error(w, "Inventory item does not exists", http.StatusBadRequest)
+		return
+	}
+
 	err := h.inventoryService.DeleteItem(id)
 	if err != nil {
 		h.logger.Error("Could not delete inventory item", "error", err, "method", r.Method, "url", r.URL)

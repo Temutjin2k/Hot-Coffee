@@ -111,3 +111,7 @@ func (s *InventoryService) DeleteItem(id string) error {
 
 	return nil
 }
+
+func (s *InventoryService) Exists(id string) bool {
+	return s.inventoryRepo.Exists(id)
+}
