@@ -60,9 +60,9 @@ func main() {
 	inventoryRepo := dal.NewInventoryRepository(inventoryPath)
 
 	// Initialize services (Business Logic Layer)
-	orderService := service.NewOrderService(*orderRepo, *menuRepo)
-	menuService := service.NewMenuService(*menuRepo, *inventoryRepo)
-	inventoryService := service.NewInventoryService(*inventoryRepo)
+	orderService := service.NewOrderService(orderRepo, menuRepo)
+	menuService := service.NewMenuService(menuRepo, inventoryRepo)
+	inventoryService := service.NewInventoryService(inventoryRepo)
 
 	// Initialize handlers (Presentation Layer)
 	orderHandler := handler.NewOrderHandler(orderService, menuService, logger)

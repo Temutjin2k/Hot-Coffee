@@ -7,6 +7,12 @@ import (
 	"hot-coffee/models"
 )
 
+type MenuRepo interface {
+	GetAll() ([]models.MenuItem, error)
+	Exists(itemID string) bool
+	SaveAll(menuItems []models.MenuItem) error
+}
+
 // MenuRepository implements MenuRepository using JSON files
 type MenuRepository struct {
 	path string

@@ -12,11 +12,11 @@ import (
 )
 
 type OrderService struct {
-	orderRepo dal.OrderRepository
-	menuRepo  dal.MenuRepository
+	orderRepo dal.OrderRepo
+	menuRepo  dal.MenuRepo
 }
 
-func NewOrderService(orderRepo dal.OrderRepository, menuRepo dal.MenuRepository) *OrderService {
+func NewOrderService(orderRepo dal.OrderRepo, menuRepo dal.MenuRepo) *OrderService {
 	return &OrderService{
 		orderRepo: orderRepo,
 		menuRepo:  menuRepo,

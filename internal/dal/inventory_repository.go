@@ -7,6 +7,13 @@ import (
 	"hot-coffee/models"
 )
 
+type InventoryRepo interface {
+	GetAll() ([]models.InventoryItem, error)
+	Exists(ID string) bool
+	SubtractIngredients(ingredients map[string]float64) error
+	SaveAll(items []models.InventoryItem) error
+}
+
 // InventoryRepository implements InventoryRepository using JSON files
 type InventoryRepository struct {
 	path string

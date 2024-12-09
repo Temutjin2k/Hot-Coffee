@@ -9,11 +9,11 @@ import (
 )
 
 type MenuService struct {
-	menuRepo      dal.MenuRepository
-	inventoryRepo dal.InventoryRepository
+	menuRepo      dal.MenuRepo
+	inventoryRepo dal.InventoryRepo
 }
 
-func NewMenuService(menuRepo dal.MenuRepository, inventoryRepo dal.InventoryRepository) *MenuService {
+func NewMenuService(menuRepo dal.MenuRepo, inventoryRepo dal.InventoryRepo) *MenuService {
 	return &MenuService{menuRepo: menuRepo, inventoryRepo: inventoryRepo}
 }
 

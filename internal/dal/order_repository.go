@@ -8,6 +8,13 @@ import (
 	"hot-coffee/models"
 )
 
+type OrderRepo interface {
+	GetAll() ([]models.Order, error)
+	Add(order models.Order) error
+	SaveAll(Orders []models.Order) error
+	GetID() (int, error)
+}
+
 // OrderRepository implements OrderRepository using JSON files
 type OrderRepository struct {
 	path string
@@ -73,7 +80,7 @@ func (repo *OrderRepository) GetID() (int, error) {
 	ID.ID++
 	NewContent, err := json.MarshalIndent(ID, "", "    ")
 	if err != nil {
-		// TODO
+		return 0, err
 	}
 	os.WriteFile(configPath, NewContent, os.ModePerm)
 	return i, nil
