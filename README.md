@@ -1,4 +1,4 @@
-# hot-coffee
+# Coffee-shop
 
 ## Context
 
