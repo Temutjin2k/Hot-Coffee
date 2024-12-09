@@ -126,26 +126,6 @@ Content-Type: application/json
 }
 ```
 
-# Error Examples:
-
-```http 
-HTTP/1.1 400 Bad Request
-Content-Type: application/json
-
-{
-  "error": "Invalid product ID in order items."
-}
-```
-
-```http
-HTTP/1.1 400 Bad Request
-Content-Type: application/json
-
-{
-  "error": "Insufficient inventory for ingredient 'Milk'. Required: 200ml, Available: 150ml."
-}
-
-```
 
 ## Database stored in given directory (--dir flag)(Default: data)
 
@@ -283,7 +263,6 @@ Content-Type: application/json
 
 
 ### Usage
-s
 
 ```sh
 $ ./hot-coffee --help
