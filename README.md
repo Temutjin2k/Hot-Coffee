@@ -12,6 +12,7 @@ The `hot-coffee` (coffee shop management system) project is a simplified version
 - **Oversee Inventory:** Track ingredient stock levels to prevent shortages and ensure freshness.
 - **Update the Menu:** Add new drinks or pastries, adjust prices as needed, and keep the offerings up to date.
 
+Team members: Temutjin Koszhanov
 
 ### API Endpoints
 
@@ -125,26 +126,6 @@ Content-Type: application/json
 }
 ```
 
-# Error Examples:
-
-```http 
-HTTP/1.1 400 Bad Request
-Content-Type: application/json
-
-{
-  "error": "Invalid product ID in order items."
-}
-```
-
-```http
-HTTP/1.1 400 Bad Request
-Content-Type: application/json
-
-{
-  "error": "Insufficient inventory for ingredient 'Milk'. Required: 200ml, Available: 150ml."
-}
-
-```
 
 ## Database stored in given directory (--dir flag)(Default: data)
 
@@ -282,7 +263,6 @@ Content-Type: application/json
 
 
 ### Usage
-s
 
 ```sh
 $ ./hot-coffee --help
@@ -298,11 +278,3 @@ Options:
   --dir S      Path to the data directory.
 ```
 
-
-
----
-## Author
-
-This project has been done by:
-
-tkoszhan, malpamys
