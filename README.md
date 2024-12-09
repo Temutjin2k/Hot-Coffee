@@ -12,6 +12,7 @@ The `hot-coffee` (coffee shop management system) project is a simplified version
 - **Oversee Inventory:** Track ingredient stock levels to prevent shortages and ensure freshness.
 - **Update the Menu:** Add new drinks or pastries, adjust prices as needed, and keep the offerings up to date.
 
+Team members: Temutjin Koszhanov
 
 ### API Endpoints
 
@@ -298,11 +299,3 @@ Options:
   --dir S      Path to the data directory.
 ```
 
-
-
----
-## Author
-
-This project has been done by:
-
-tkoszhan, malpamys
